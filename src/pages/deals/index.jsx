@@ -29,127 +29,7 @@ const DealsPage = () => {
 
   // Mock deals data
   const mockDeals = [
-    {
-      id: 1,
-      name: 'Enterprise Software License',
-      account: 'TechCorp Solutions',
-      value: 125000,
-      owner: 'Sarah Johnson',
-      stage: 'Proposal',
-      closeDate: '2025-12-15',
-      probability: 75,
-      createdDate: '2025-10-15'
-    },
-    {
-      id: 2,
-      name: 'Cloud Migration Project',
-      account: 'Global Manufacturing Inc',
-      value: 89000,
-      owner: 'Michael Chen',
-      stage: 'Negotiation',
-      closeDate: '2025-11-30',
-      probability: 85,
-      createdDate: '2025-09-20'
-    },
-    {
-      id: 3,
-      name: 'Security Audit & Compliance',
-      account: 'Financial Services Ltd',
-      value: 45000,
-      owner: 'Emily Rodriguez',
-      stage: 'Qualified',
-      closeDate: '2025-12-31',
-      probability: 60,
-      createdDate: '2025-10-01'
-    },
-    {
-      id: 4,
-      name: 'Digital Transformation Suite',
-      account: 'Healthcare Systems Corp',
-      value: 200000,
-      owner: 'David Kim',
-      stage: 'New',
-      closeDate: '2026-01-15',
-      probability: 40,
-      createdDate: '2025-10-28'
-    },
-    {
-      id: 5,
-      name: 'Data Analytics Platform',
-      account: 'Retail Chain Holdings',
-      value: 67000,
-      owner: 'Lisa Thompson',
-      stage: 'Proposal',
-      closeDate: '2025-12-10',
-      probability: 70,
-      createdDate: '2025-09-15'
-    },
-    {
-      id: 6,
-      name: 'Mobile App Development',
-      account: 'StartupTech Inc',
-      value: 35000,
-      owner: 'Sarah Johnson',
-      stage: 'Won',
-      closeDate: '2025-11-15',
-      probability: 100,
-      createdDate: '2025-08-10'
-    },
-    {
-      id: 7,
-      name: 'Infrastructure Upgrade',
-      account: 'Education District 42',
-      value: 150000,
-      owner: 'Michael Chen',
-      stage: 'Negotiation',
-      closeDate: '2025-12-20',
-      probability: 80,
-      createdDate: '2025-09-05'
-    },
-    {
-      id: 8,
-      name: 'CRM Implementation',
-      account: 'Marketing Agency Pro',
-      value: 28000,
-      owner: 'Emily Rodriguez',
-      stage: 'Lost',
-      closeDate: '2025-10-30',
-      probability: 0,
-      createdDate: '2025-08-20'
-    },
-    {
-      id: 9,
-      name: 'AI Integration Services',
-      account: 'Innovation Labs',
-      value: 95000,
-      owner: 'David Kim',
-      stage: 'Qualified',
-      closeDate: '2026-01-30',
-      probability: 55,
-      createdDate: '2025-10-10'
-    },
-    {
-      id: 10,
-      name: 'Cybersecurity Assessment',
-      account: 'Government Agency',
-      value: 75000,
-      owner: 'Lisa Thompson',
-      stage: 'Proposal',
-      closeDate: '2025-12-05',
-      probability: 65,
-      createdDate: '2025-09-25'
-    },
-    {
-      id: 11,
-      name: 'E-commerce Platform',
-      account: 'Fashion Retailer Co',
-      value: 110000,
-      owner: 'Sarah Johnson',
-      stage: 'New',
-      closeDate: '2026-02-15',
-      probability: 35,
-      createdDate: '2025-11-01'
-    },
+   
     {
       id: 12,
       name: 'Business Intelligence Suite',
@@ -158,7 +38,7 @@ const DealsPage = () => {
       owner: 'Michael Chen',
       stage: 'Qualified',
       closeDate: '2025-12-25',
-      probability: 50,
+      probability: 19,
       createdDate: '2025-10-05'
     }
   ];
@@ -301,7 +181,7 @@ const DealsPage = () => {
   return (
     <>
       <Helmet>
-        <title>Deals - CRMPro</title>
+        <title>Leads</title>
         <meta name="description" content="Manage and track your sales deals with comprehensive filtering and pipeline management tools." />
       </Helmet>
       <div className="min-h-screen bg-background">
@@ -313,12 +193,14 @@ const DealsPage = () => {
             {/* Page Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Deals</h1>
+                <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Leads</h1>
                 <p className="text-muted-foreground mt-1">
                   Track and manage your sales opportunities
                 </p>
               </div>
               <div className="flex items-center space-x-3">
+              
+                {/*
                 <Button variant="outline">
                   <Icon name="Download" size={16} className="mr-2" />
                   Export
@@ -327,9 +209,11 @@ const DealsPage = () => {
                   <Icon name="GitBranch" size={16} className="mr-2" />
                   Pipeline View
                 </Button>
+
+                */} 
                 <Button>
                   <Icon name="Plus" size={16} className="mr-2" />
-                  New Deal
+                  New Lead
                 </Button>
               </div>
             </div>

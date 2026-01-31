@@ -10,71 +10,37 @@ const Sidebar = ({ isOpen = false, onClose }) => {
 
   const navigationItems = [
     {
-      label: 'Dashboard',
-      path: '/dashboard',
-      icon: 'LayoutDashboard',
+      label: 'Home',
+      path: '/home',
+      icon: 'Homescreen',
       badge: null
     },
     {
-      label: 'Accounts',
-      path: '/accounts',
-      icon: 'Building2',
-      badge: null
-    },
-    {
-      label: 'Contacts',
-      path: '/contacts',
-      icon: 'Users',
-      badge: null
-    },
-    {
-      label: 'Deals',
-      path: '/deals',
+      label: 'Leads',
+      path: '/Leads',
       icon: 'Target',
-      badge: '12'
-    },
+      badge: null    },
     {
       label: 'Pipeline',
       path: '/pipeline',
       icon: 'GitBranch',
       badge: null
     },
+    
     {
-      label: 'Activities',
-      path: '/activities',
-      icon: 'Calendar',
-      badge: '3'
-    },
-    {
-      label: 'Emails',
-      path: '/emails',
-      icon: 'Mail',
+      label: 'Dashboard',
+      path: '/dashboard',
+      icon: 'LayoutDashboard',
       badge: null
     },
-    {
-      label: 'Reports',
-      path: '/reports',
-      icon: 'BarChart3',
-      badge: null
-    },
-    {
-      label: 'Settings',
-      path: '/settings',
-      icon: 'Settings',
-      badge: null
-    },
-    {
-      label: 'Billing',
-      path: '/billing',
-      icon: 'CreditCard',
-      badge: null
-    },
-    {
-      label: 'Integrations',
-      path: '/integrations',
-      icon: 'Puzzle',
-      badge: null
-    }
+
+     {
+      label: 'Recycle Bin',
+      path: '/recyclebin',
+      icon: 'RecycleBin',
+      badge: null   
+     },
+  
   ];
 
   const handleNavigation = (path) => {
@@ -120,10 +86,7 @@ const Sidebar = ({ isOpen = false, onClose }) => {
                 <Icon name="Zap" size={20} color="white" />
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-lg font-semibold text-foreground">CRMPro</span>
-                <span className="px-2 py-0.5 text-xs font-medium bg-accent text-accent-foreground rounded-full">
-                  v2.1
-                </span>
+                <span className="text-lg font-semibold text-foreground">pyngyn</span>
               </div>
             </div>
             
@@ -188,42 +151,7 @@ const Sidebar = ({ isOpen = false, onClose }) => {
             </div>
           </nav>
 
-          {/* Upgrade Card */}
-          {isUpgradeCardVisible && (
-            <div className="p-4 border-t border-border">
-              <div className="relative bg-gradient-to-br from-primary to-secondary p-4 rounded-lg text-primary-foreground">
-                <button
-                  onClick={handleUpgradeClose}
-                  className="absolute top-2 right-2 p-1 rounded-full hover:bg-white/20 transition-smooth"
-                  aria-label="Close upgrade card"
-                >
-                  <Icon name="X" size={14} />
-                </button>
-                
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Icon name="Crown" size={20} />
-                    <span className="font-semibold">Upgrade to Pro</span>
-                  </div>
-                  
-                  <p className="text-sm text-primary-foreground/90">
-                    Unlock advanced analytics, unlimited contacts, and premium integrations.
-                  </p>
-                  
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleUpgradeClick}
-                    className="w-full bg-white/20 hover:bg-white/30 text-primary-foreground border-white/30"
-                  >
-                    <Icon name="ArrowRight" size={16} className="mr-2" />
-                    Upgrade Now
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
+          
           {/* Footer */}
           <div className="p-4 border-t border-border">
             <div className="text-xs text-muted-foreground text-center">

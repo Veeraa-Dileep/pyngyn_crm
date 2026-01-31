@@ -6,6 +6,7 @@ import NotFound from "./pages/NotFound";
 import DealsPage from './pages/deals';
 import Dashboard from './pages/dashboard';
 import Pipeline from './pages/pipeline';
+import HomePage from './pages/home';
 
 
 const Routes = () => {
@@ -15,8 +16,9 @@ const Routes = () => {
       <ScrollToTop />
       <RouterRoutes>
         {/* Define your route here */}
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/deals" element={<DealsPage />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/Leads" element={<DealsPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/pipeline" element={<Pipeline />} />
         <Route path="*" element={<NotFound />} />

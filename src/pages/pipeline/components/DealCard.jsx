@@ -121,22 +121,10 @@ const DealCard = ({ deal, onEdit, onDelete, onClone }) => {
           </div>
         </div>
 
-        {/* Deal Value */}
-        <div className="text-xl font-bold text-primary">
-          {formatCurrency(deal?.value)}
-        </div>
-
         {/* Deal Details */}
         <div className="space-y-2.5">
           {/* Owner */}
           <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-full overflow-hidden bg-muted flex-shrink-0 ring-2 ring-background">
-              <Image
-                src={deal?.owner?.avatar}
-                alt={deal?.owner?.avatarAlt}
-                className="w-full h-full object-cover"
-              />
-            </div>
             <span className="text-sm font-medium text-foreground truncate">
               {deal?.owner?.name}
             </span>
@@ -155,14 +143,16 @@ const DealCard = ({ deal, onEdit, onDelete, onClone }) => {
             <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${getPriorityColor(deal?.priority)}`}>
               {deal?.priority}
             </span>
-            
-            {/* Probability */}
+           {/* 
+           
             <div className="flex items-center space-x-1">
               <Icon name="TrendingUp" size={14} className="text-muted-foreground" />
               <span className="text-sm font-semibold text-foreground">
                 {deal?.probability}%
               </span>
             </div>
+           */} 
+           
           </div>
         </div>
 
@@ -179,8 +169,8 @@ const DealCard = ({ deal, onEdit, onDelete, onClone }) => {
             />
           </div>
         </div>
-
-        {/* Tags */}
+      
+        {/* 
         {deal?.tags && deal?.tags?.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {deal?.tags?.slice(0, 2)?.map((tag, index) => (
@@ -198,6 +188,8 @@ const DealCard = ({ deal, onEdit, onDelete, onClone }) => {
             )}
           </div>
         )}
+        */}
+
       </div>
     </motion.div>
   );

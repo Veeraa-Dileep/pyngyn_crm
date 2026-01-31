@@ -63,7 +63,7 @@ const DealsFilters = ({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
         <div className="flex items-center space-x-4">
           <h2 className="text-lg font-semibold text-foreground">
-            Deals ({dealCount?.toLocaleString()})
+            Leads ({dealCount?.toLocaleString()})
           </h2>
           {activeFiltersCount > 0 && (
             <div className="flex items-center space-x-2">
@@ -144,7 +144,7 @@ const DealsFilters = ({
       <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 ${isExpanded ? 'block' : 'hidden lg:grid'}`}>
         <Input
           type="search"
-          placeholder="Search deals..."
+          placeholder="Search Leads..."
           value={filters?.search || ''}
           onChange={(e) => handleFilterChange('search', e?.target?.value)}
           className="lg:col-span-2"
@@ -165,22 +165,7 @@ const DealsFilters = ({
           searchable
         />
         
-        <div className="flex space-x-2">
-          <Input
-            type="number"
-            placeholder="Min value"
-            value={filters?.minValue || ''}
-            onChange={(e) => handleFilterChange('minValue', e?.target?.value)}
-            className="flex-1"
-          />
-          <Input
-            type="number"
-            placeholder="Max value"
-            value={filters?.maxValue || ''}
-            onChange={(e) => handleFilterChange('maxValue', e?.target?.value)}
-            className="flex-1"
-          />
-        </div>
+       
       </div>
       {/* Advanced Filters Toggle */}
       <div className="hidden lg:flex items-center justify-between mt-4 pt-4 border-t border-border">
@@ -199,10 +184,6 @@ const DealsFilters = ({
           />
         </div>
         
-        <Button variant="outline" size="sm">
-          <Icon name="Download" size={16} className="mr-1" />
-          Export All
-        </Button>
       </div>
     </div>
   );

@@ -93,7 +93,7 @@ const DealsTable = ({
                   onClick={() => onSort('name')}
                   className="flex items-center space-x-2 text-sm font-medium text-foreground hover:text-primary transition-smooth"
                 >
-                  <span>Deal Name</span>
+                  <span>Titile</span>
                   {getSortIcon('name')}
                 </button>
               </th>
@@ -102,7 +102,7 @@ const DealsTable = ({
                   onClick={() => onSort('account')}
                   className="flex items-center space-x-2 text-sm font-medium text-foreground hover:text-primary transition-smooth"
                 >
-                  <span>Account</span>
+                  <span>Name</span>
                   {getSortIcon('account')}
                 </button>
               </th>
