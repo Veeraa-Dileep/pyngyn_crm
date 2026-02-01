@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import Header from "../../components/ui/Header";
-import Sidebar from "../../components/ui/Sidebar";
+import AppLayout from "../../components/AppLayout"; 
 import Icon from "../../components/AppIcon";
 import Button from "../../components/ui/Button";
 import DealsTable from "./components/DealsTable";
@@ -25,7 +24,6 @@ const ASSIGNEES = ["Dileep", "Shankar"];
 const DEFAULT_PIPELINE_ID = "default-pipeline";
 
 const DealsPage = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [leads, setLeads] = useState([]);
 
   const [selectedDeal, setSelectedDeal] = useState(null);
@@ -50,32 +48,31 @@ const DealsPage = () => {
   });
 
   const handleCreateLead = async () => {
-  if (!newLead.name || !newLead.mobile) return;
+    if (!newLead.name || !newLead.mobile) return;
 
-  await addDoc(collection(db, 'leads'), {
-    title: newLead.title,
-    name: newLead.name,
-    company: newLead.company,
-    mobile: newLead.mobile,
-    email: newLead.email,
-    source: 'Manual',
-    status: 'new',
-    notes: '',
-    assignee: null,
-    pipelineId: null,
-    createdAt: serverTimestamp(),
-  });
+    await addDoc(collection(db, "leads"), {
+      title: newLead.title,
+      name: newLead.name,
+      company: newLead.company,
+      mobile: newLead.mobile,
+      email: newLead.email,
+      source: "Manual",
+      status: "new",
+      notes: "",
+      assignee: null,
+      pipelineId: null,
+      createdAt: serverTimestamp(),
+    });
 
-  setIsAddLeadOpen(false);
-  setNewLead({
-    title: '',
-    name: '',
-    company: '',
-    mobile: '',
-    email: '',
-  });
-};
-
+    setIsAddLeadOpen(false);
+    setNewLead({
+      title: "",
+      name: "",
+      company: "",
+      mobile: "",
+      email: "",
+    });
+  };
 
   /* ---------------- FIREBASE: FETCH LEADS ---------------- */
   useEffect(() => {
@@ -132,22 +129,13 @@ const DealsPage = () => {
   const totalPages = Math.ceil(filteredAndSortedDeals.length / itemsPerPage);
 
   return (
-    <>
+     <div className="min-h-screen bg-background">
+       <AppLayout>
       <Helmet>
         <title>Leads</title>
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <Header
-          onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-          isSidebarOpen={isSidebarOpen}
-        />
-        <Sidebar
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-        />
-
-        <main className="lg:ml-64 pt-16">
+        <main className="lg:ml-6 pt-6">
           <div className="p-4 lg:p-6">
             {/* PAGE HEADER */}
             <div className="flex flex-col lg:flex-row justify-between gap-4 mb-6">
@@ -241,73 +229,67 @@ const DealsPage = () => {
             </div>
           </div>
         )}
-      </div>
+      
       {isAddLeadOpen && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-    <div className="bg-card p-6 rounded-lg w-full max-w-sm">
-      <h3 className="text-lg font-semibold mb-4">Add New Lead</h3>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg w-full max-w-sm">
+            <h3 className="text-lg font-semibold mb-4">Add New Lead</h3>
 
-      <input
-        className="w-full mb-2 border px-2 py-1"
-        placeholder="Title"
-        value={newLead.title}
-        onChange={(e) =>
-          setNewLead({ ...newLead, title: e.target.value })
-        }
-      />
+            <input
+              className="w-full mb-2 border px-2 py-1"
+              placeholder="Title"
+              value={newLead.title}
+              onChange={(e) =>
+                setNewLead({ ...newLead, title: e.target.value })
+              }
+            />
 
-      <input
-        className="w-full mb-2 border px-2 py-1"
-        placeholder="Name *"
-        value={newLead.name}
-        onChange={(e) =>
-          setNewLead({ ...newLead, name: e.target.value })
-        }
-      />
+            <input
+              className="w-full mb-2 border px-2 py-1"
+              placeholder="Name *"
+              value={newLead.name}
+              onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+            />
 
-      <input
-        className="w-full mb-2 border px-2 py-1"
-        placeholder="Company"
-        value={newLead.company}
-        onChange={(e) =>
-          setNewLead({ ...newLead, company: e.target.value })
-        }
-      />
+            <input
+              className="w-full mb-2 border px-2 py-1"
+              placeholder="Company"
+              value={newLead.company}
+              onChange={(e) =>
+                setNewLead({ ...newLead, company: e.target.value })
+              }
+            />
 
-      <input
-        className="w-full mb-2 border px-2 py-1"
-        placeholder="Mobile *"
-        value={newLead.mobile}
-        onChange={(e) =>
-          setNewLead({ ...newLead, mobile: e.target.value })
-        }
-      />
+            <input
+              className="w-full mb-2 border px-2 py-1"
+              placeholder="Mobile *"
+              value={newLead.mobile}
+              onChange={(e) =>
+                setNewLead({ ...newLead, mobile: e.target.value })
+              }
+            />
 
-      <input
-        className="w-full mb-4 border px-2 py-1"
-        placeholder="Email"
-        value={newLead.email}
-        onChange={(e) =>
-          setNewLead({ ...newLead, email: e.target.value })
-        }
-      />
+            <input
+              className="w-full mb-4 border px-2 py-1"
+              placeholder="Email"
+              value={newLead.email}
+              onChange={(e) =>
+                setNewLead({ ...newLead, email: e.target.value })
+              }
+            />
 
-      <div className="flex justify-end gap-2">
-        <Button
-          variant="outline"
-          onClick={() => setIsAddLeadOpen(false)}
-        >
-          Cancel
-        </Button>
-        <Button onClick={handleCreateLead}>
-          Save
-        </Button>
-      </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsAddLeadOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateLead}>Save</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </AppLayout>
     </div>
-  </div>
-)}
-
-    </>
   );
 };
 

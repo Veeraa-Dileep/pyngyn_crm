@@ -20,7 +20,7 @@ const HomePage = () => {
         <title>Pyngyn CRM</title>
       </Helmet>
 
-      <div className="p-6 space-y-6">
+      <div className="p-12 space-y-12">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
           <div>
             <h1 className="text-2xl font-bold text-foreground">

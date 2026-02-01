@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import Header from '../../components/ui/Header';
-import Sidebar from '../../components/ui/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import KPICard from './components/KPICard';
 import PipelineChart from './components/PipelineChart';
 import RecentActivities from './components/RecentActivities';
 import RightRail from './components/RightRail';
 
 const Dashboard = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleMenuToggle = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -62,9 +60,11 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onMenuToggle={handleMenuToggle} isSidebarOpen={isSidebarOpen} />
-      <Sidebar isOpen={isSidebarOpen} onClose={handleSidebarClose} />
-      <main className="lg:ml-64 pt-16">
+      <AppLayout>
+      <motion.Helmet>
+        <title>Dashboard</title>
+      </motion.Helmet>
+      <main className="lg:ml-6 pt-6">
         <div className="flex">
           {/* Main Content */}
           <div className="flex-1 p-4 lg:p-6 xl:pr-0">
@@ -115,8 +115,11 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+      </AppLayout>
     </div>
+    
   );
+    
 };
 
 export default Dashboard;

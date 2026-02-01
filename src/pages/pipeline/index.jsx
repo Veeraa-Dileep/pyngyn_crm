@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import Header from '../../components/ui/Header';
-import Sidebar from '../../components/ui/Sidebar';
+import AppLayout from '../../components/AppLayout';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import PipelineColumn from './components/PipelineColumn';
@@ -10,7 +9,6 @@ import AddDealModal from './components/AddDealModal';
 import PipelineStats from './components/PipelineStats';
 
 const Pipeline = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAddDealModalOpen, setIsAddDealModalOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState(null);
   const [deals, setDeals] = useState([]);
@@ -50,144 +48,11 @@ const Pipeline = () => {
     closeDate: '2025-01-15',
     priority: 'High',
     probability: 85,
-    stage: 'proposal',
+    stage: 'new',
     tags: ['Enterprise', 'Software', 'Renewal'],
     createdAt: '2024-12-01T10:00:00Z',
     updatedAt: '2025-01-02T14:30:00Z'
-  },
-  {
-    id: 'deal-2',
-    title: 'Cloud Migration Project',
-    accountName: 'Global Manufacturing Inc',
-    value: 75000,
-    owner: {
-      id: 'sarah-wilson',
-      name: 'Sarah Wilson',
-      avatar: "https://images.unsplash.com/photo-1647326164285-b882810647cb",
-      avatarAlt: 'Professional headshot of Sarah Wilson with blonde hair in business attire'
-    },
-    closeDate: '2025-02-28',
-    priority: 'Medium',
-    probability: 60,
-    stage: 'qualified',
-    tags: ['Cloud', 'Migration'],
-    createdAt: '2024-12-15T09:15:00Z',
-    updatedAt: '2025-01-01T11:20:00Z'
-  },
-  {
-    id: 'deal-3',
-    title: 'Security Audit Services',
-    accountName: 'Financial Services Ltd',
-    value: 45000,
-    owner: {
-      id: 'mike-johnson',
-      name: 'Mike Johnson',
-      avatar: "https://images.unsplash.com/photo-1722368378695-8a56b520fcf0",
-      avatarAlt: 'Professional headshot of Mike Johnson with dark hair and glasses'
-    },
-    closeDate: '2025-01-30',
-    priority: 'High',
-    probability: 90,
-    stage: 'proposal',
-    tags: ['Security', 'Audit', 'Compliance'],
-    createdAt: '2024-11-20T16:45:00Z',
-    updatedAt: '2025-01-02T09:10:00Z'
-  },
-  {
-    id: 'deal-4',
-    title: 'Marketing Automation Platform',
-    accountName: 'Retail Chain Corp',
-    value: 35000,
-    owner: {
-      id: 'emily-davis',
-      name: 'Emily Davis',
-      avatar: "https://images.unsplash.com/photo-1700561791890-a15d45b9c79d",
-      avatarAlt: 'Professional headshot of Emily Davis with curly brown hair in blue blazer'
-    },
-    closeDate: '2025-03-15',
-    priority: 'Medium',
-    probability: 40,
-    stage: 'new',
-    tags: ['Marketing', 'Automation'],
-    createdAt: '2025-01-01T08:30:00Z',
-    updatedAt: '2025-01-02T15:45:00Z'
-  },
-  {
-    id: 'deal-5',
-    title: 'Data Analytics Solution',
-    accountName: 'Healthcare Systems',
-    value: 95000,
-    owner: {
-      id: 'alex-chen',
-      name: 'Alex Chen',
-      avatar: "https://images.unsplash.com/photo-1537107041341-713aaa2a234c",
-      avatarAlt: 'Professional headshot of Alex Chen with black hair in charcoal suit'
-    },
-    closeDate: '2025-02-10',
-    priority: 'High',
-    probability: 75,
-    stage: 'qualified',
-    tags: ['Analytics', 'Healthcare', 'Data'],
-    createdAt: '2024-12-10T13:20:00Z',
-    updatedAt: '2025-01-02T10:15:00Z'
-  },
-  {
-    id: 'deal-6',
-    title: 'Mobile App Development',
-    accountName: 'Startup Innovations',
-    value: 28000,
-    owner: {
-      id: 'john-doe',
-      name: 'John Doe',
-      avatar: "https://images.unsplash.com/photo-1588178457501-31b7688a41a0",
-      avatarAlt: 'Professional headshot of John Doe in navy suit with short brown hair'
-    },
-    closeDate: '2025-04-01',
-    priority: 'Low',
-    probability: 30,
-    stage: 'new',
-    tags: ['Mobile', 'Development'],
-    createdAt: '2025-01-02T12:00:00Z',
-    updatedAt: '2025-01-02T12:00:00Z'
-  },
-  {
-    id: 'deal-7',
-    title: 'ERP Implementation',
-    accountName: 'Manufacturing Plus',
-    value: 180000,
-    owner: {
-      id: 'sarah-wilson',
-      name: 'Sarah Wilson',
-      avatar: "https://images.unsplash.com/photo-1648466982925-65dac4ed0814",
-      avatarAlt: 'Professional headshot of Sarah Wilson with blonde hair in business attire'
-    },
-    closeDate: '2024-12-20',
-    priority: 'High',
-    probability: 100,
-    stage: 'won',
-    tags: ['ERP', 'Implementation', 'Enterprise'],
-    createdAt: '2024-10-15T14:30:00Z',
-    updatedAt: '2024-12-20T16:45:00Z'
-  },
-  {
-    id: 'deal-8',
-    title: 'Website Redesign',
-    accountName: 'Local Business Co',
-    value: 15000,
-    owner: {
-      id: 'mike-johnson',
-      name: 'Mike Johnson',
-      avatar: "https://images.unsplash.com/photo-1722368378695-8a56b520fcf0",
-      avatarAlt: 'Professional headshot of Mike Johnson with dark hair and glasses'
-    },
-    closeDate: '2024-11-30',
-    priority: 'Low',
-    probability: 0,
-    stage: 'lost',
-    tags: ['Website', 'Design'],
-    createdAt: '2024-10-01T09:00:00Z',
-    updatedAt: '2024-11-30T17:00:00Z'
-  }];
+  },];
 
 
   useEffect(() => {
@@ -330,9 +195,11 @@ const Pipeline = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onMenuToggle={handleSidebarToggle} isSidebarOpen={isSidebarOpen} />
-      <Sidebar isOpen={isSidebarOpen} onClose={handleSidebarClose} />
-      <main className="lg:ml-64 pt-16">
+      <AppLayout>
+      <motion.Helmet>
+        <title>Sales Pipeline</title>
+      </motion.Helmet>
+      <main className="lg:ml-6 pt-6">
         <div className="p-6 space-y-6">
           {/* Page Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
@@ -467,6 +334,7 @@ const Pipeline = () => {
         onClose={() => setIsAddDealModalOpen(false)}
         onSave={handleSaveDeal}
         initialStage={selectedStage} />
+      </AppLayout>  
     </div>
   );
 
