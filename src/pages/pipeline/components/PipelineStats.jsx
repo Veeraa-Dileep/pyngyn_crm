@@ -7,7 +7,7 @@ const PipelineStats = ({ deals }) => {
     const totalDeals = deals?.length;
     const totalValue = deals?.reduce((sum, deal) => sum + deal?.value, 0);
     const avgDealSize = totalDeals > 0 ? totalValue / totalDeals : 0;
-    
+
     const stageStats = deals?.reduce((acc, deal) => {
       if (!acc?.[deal?.stage]) {
         acc[deal.stage] = { count: 0, value: 0 };
@@ -20,9 +20,9 @@ const PipelineStats = ({ deals }) => {
     const wonDeals = deals?.filter(deal => deal?.stage === 'won');
     const lostDeals = deals?.filter(deal => deal?.stage === 'lost');
     const activeDeals = deals?.filter(deal => !['won', 'lost']?.includes(deal?.stage));
-    
-    const winRate = (wonDeals?.length + lostDeals?.length) > 0 
-      ? (wonDeals?.length / (wonDeals?.length + lostDeals?.length)) * 100 
+
+    const winRate = (wonDeals?.length + lostDeals?.length) > 0
+      ? (wonDeals?.length / (wonDeals?.length + lostDeals?.length)) * 100
       : 0;
 
     const weightedValue = activeDeals?.reduce((sum, deal) => {
@@ -57,15 +57,7 @@ const PipelineStats = ({ deals }) => {
   };
 
   const statCards = [
-    {
-      title: 'Total Pipeline Value',
-      value: formatCurrency(stats?.totalValue),
-      icon: 'DollarSign',
-      color: 'bg-blue-100 text-blue-600',
-      bgColor: 'bg-blue-50',
-      change: '+12.5%',
-      changeType: 'positive'
-    },
+
     {
       title: 'Active Deals',
       value: stats?.activeDeals?.toString(),
@@ -75,15 +67,7 @@ const PipelineStats = ({ deals }) => {
       change: '+3',
       changeType: 'positive'
     },
-    {
-      title: 'Weighted Pipeline',
-      value: formatCurrency(stats?.weightedValue),
-      icon: 'TrendingUp',
-      color: 'bg-green-100 text-green-600',
-      bgColor: 'bg-green-50',
-      change: '+8.2%',
-      changeType: 'positive'
-    },
+
     {
       title: 'Win Rate',
       value: formatPercentage(stats?.winRate),
@@ -93,15 +77,7 @@ const PipelineStats = ({ deals }) => {
       change: '-2.1%',
       changeType: 'negative'
     },
-    {
-      title: 'Average Deal Size',
-      value: formatCurrency(stats?.avgDealSize),
-      icon: 'BarChart3',
-      color: 'bg-indigo-100 text-indigo-600',
-      bgColor: 'bg-indigo-50',
-      change: '+15.3%',
-      changeType: 'positive'
-    },
+
     {
       title: 'Won This Month',
       value: formatCurrency(stats?.wonValue),
@@ -127,17 +103,16 @@ const PipelineStats = ({ deals }) => {
             <div className={`w-12 h-12 ${stat?.color} rounded-xl flex items-center justify-center shadow-sm`}>
               <Icon name={stat?.icon} size={22} />
             </div>
-            <div className={`flex items-center space-x-1 text-xs font-semibold px-2 py-1 rounded-full ${
-              stat?.changeType === 'positive' ?'text-green-700 bg-green-100' :'text-red-700 bg-red-100'
-            }`}>
-              <Icon 
-                name={stat?.changeType === 'positive' ? 'TrendingUp' : 'TrendingDown'} 
-                size={12} 
+            <div className={`flex items-center space-x-1 text-xs font-semibold px-2 py-1 rounded-full ${stat?.changeType === 'positive' ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
+              }`}>
+              <Icon
+                name={stat?.changeType === 'positive' ? 'TrendingUp' : 'TrendingDown'}
+                size={12}
               />
               <span>{stat?.change}</span>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <div className="text-2xl font-bold text-foreground tracking-tight">
               {stat?.value}

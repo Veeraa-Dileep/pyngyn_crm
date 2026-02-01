@@ -4,14 +4,14 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import DealCard from './DealCard';
 
-const PipelineColumn = ({ 
-  stage, 
-  deals, 
-  onDealMove, 
-  onAddDeal, 
-  onEditDeal, 
+const PipelineColumn = ({
+  stage,
+  deals,
+  onDealMove,
+  onAddDeal,
+  onEditDeal,
   onDeleteDeal,
-  onCloneDeal 
+  onCloneDeal
 }) => {
   const getStageColor = (stageName) => {
     const colors = {
@@ -52,13 +52,13 @@ const PipelineColumn = ({
   return (
     <div className="flex flex-col h-full bg-muted/30 rounded-xl border border-border">
       {/* Column Header */}
-      <div className="p-4 border-b border-border bg-background/50">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-3">
-            <span className={`px-3 py-1.5 text-sm font-semibold rounded-full border ${getStageColor(stage?.name)}`}>
+      <div className="p-3 border-b border-border bg-background/50">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${getStageColor(stage?.name)}`}>
               {stage?.name}
             </span>
-            <span className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-full">
+            <span className="text-xs font-medium text-foreground bg-muted px-2 py-0.5 rounded-full">
               {deals?.length} deal{deals?.length !== 1 ? 's' : ''}
             </span>
           </div>
@@ -66,20 +66,20 @@ const PipelineColumn = ({
             variant="ghost"
             size="icon"
             onClick={() => onAddDeal(stage?.id)}
-            className="h-8 w-8 hover:bg-primary/10"
+            className="h-7 w-7 hover:bg-primary/10"
             aria-label={`Add deal to ${stage?.name}`}
           >
-            <Icon name="Plus" size={16} />
+            <Icon name="Plus" size={14} />
           </Button>
         </div>
-        
-        <div className="text-xl font-bold text-primary">
+
+        <div className="text-lg font-bold text-primary">
           {formatCurrency(getTotalValue())}
         </div>
       </div>
       {/* Deals Container */}
-      <div 
-        className="flex-1 p-3 space-y-3 overflow-y-auto min-h-0"
+      <div
+        className="flex-1 p-2.5 space-y-2.5 overflow-y-auto min-h-0"
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >

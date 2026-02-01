@@ -52,7 +52,7 @@ const PipelineFilters = ({ filters, onFiltersChange, onResetFilters }) => {
   const activeFiltersCount = getActiveFiltersCount();
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+    <div className="bg-card border border-border rounded-lg p-3 space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
@@ -64,7 +64,7 @@ const PipelineFilters = ({ filters, onFiltersChange, onResetFilters }) => {
             </span>
           )}
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {activeFiltersCount > 0 && (
             <Button
@@ -90,9 +90,9 @@ const PipelineFilters = ({ filters, onFiltersChange, onResetFilters }) => {
         </div>
       </div>
       {/* Filters Content */}
-      <div className={`space-y-4 ${isExpanded ? 'block' : 'hidden lg:block'}`}>
+      <div className={`space-y-3 ${isExpanded ? 'block' : 'hidden lg:block'}`}>
         {/* Search and Quick Filters Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
           <Input
             type="search"
             placeholder="Search deals..."
@@ -100,21 +100,16 @@ const PipelineFilters = ({ filters, onFiltersChange, onResetFilters }) => {
             onChange={(e) => handleFilterChange('search', e?.target?.value)}
             className="w-full"
           />
-          
-          <Select
-            placeholder="Select owner"
-            options={ownerOptions}
-            value={filters?.owner || 'all'}
-            onChange={(value) => handleFilterChange('owner', value)}
-          />
-          
+
+
+
           <Select
             placeholder="Select priority"
             options={priorityOptions}
             value={filters?.priority || 'all'}
             onChange={(value) => handleFilterChange('priority', value)}
           />
-          
+
           <Select
             placeholder="Select date range"
             options={dateRangeOptions}
@@ -134,7 +129,7 @@ const PipelineFilters = ({ filters, onFiltersChange, onResetFilters }) => {
             min="0"
             step="1000"
           />
-          
+
           <Input
             type="number"
             label="Maximum Deal Value"
@@ -155,7 +150,7 @@ const PipelineFilters = ({ filters, onFiltersChange, onResetFilters }) => {
               value={filters?.startDate || ''}
               onChange={(e) => handleFilterChange('startDate', e?.target?.value)}
             />
-            
+
             <Input
               type="date"
               label="End Date"
@@ -180,7 +175,7 @@ const PipelineFilters = ({ filters, onFiltersChange, onResetFilters }) => {
                 </button>
               </span>
             )}
-            
+
             {filters?.owner && filters?.owner !== 'all' && (
               <span className="inline-flex items-center px-3 py-1 text-sm bg-accent text-accent-foreground rounded-full">
                 Owner: {ownerOptions?.find(o => o?.value === filters?.owner)?.label}
@@ -193,7 +188,7 @@ const PipelineFilters = ({ filters, onFiltersChange, onResetFilters }) => {
                 </button>
               </span>
             )}
-            
+
             {filters?.priority && filters?.priority !== 'all' && (
               <span className="inline-flex items-center px-3 py-1 text-sm bg-accent text-accent-foreground rounded-full">
                 Priority: {filters?.priority}

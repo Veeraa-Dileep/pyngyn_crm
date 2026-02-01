@@ -1,12 +1,15 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import AppLayout from "../../components/AppLayout"; 
+import AppLayout from "../../components/AppLayout";
 import Icon from "../../components/AppIcon";
 import Button from "../../components/ui/Button";
 import DealsTable from "./components/DealsTable";
 import DealsFilters from "./components/DealsFilters";
 import DealDrawer from "./components/DealDrawer";
 import TablePagination from "./components/TablePagination";
+import PromoteLeadModal from "./components/PromoteLeadModal";
+import RecycleBin from "./components/RecycleBin";
+import AddMemberModal from "../../components/AddMemberModal";
 
 import {
   collection,
@@ -17,6 +20,7 @@ import {
   serverTimestamp,
   query,
   where,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import AddLeadModal from "../../components/modals/AddLeadModal";
@@ -27,6 +31,11 @@ const DEFAULT_PIPELINE_ID = "default-pipeline";
 
 const DealsPage = () => {
   const [leads, setLeads] = useState([]);
+  const [deletedLeads, setDeletedLeads] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([
+    { id: '1', name: 'Dileep', email: 'dileep@example.com', role: 'Sales Manager' },
+    { id: '2', name: 'Shankar', email: 'shankar@example.com', role: 'Sales Rep' }
+  ]);
 
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -35,11 +44,11 @@ const DealsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
 
-  // promote modal
+  // Modal states
   const [promoteLead, setPromoteLead] = useState(null);
-  const [assignee, setAssignee] = useState("");
-  const [pipelineId, setPipelineId] = useState(DEFAULT_PIPELINE_ID);
   const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
+  const [isRecycleBinOpen, setIsRecycleBinOpen] = useState(false);
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
   // Toast notifications
   const { showToast, ToastContainer } = useToast();
@@ -52,7 +61,7 @@ const DealsPage = () => {
         company: formData.company,
         mobile: formData.mobile,
         email: formData.email,
-        source: formData.source, // Save source to database
+        source: formData.source,
         status: "new",
         notes: "",
         assignee: null,
@@ -61,8 +70,6 @@ const DealsPage = () => {
       });
 
       setIsAddLeadOpen(false);
-      
-      // Show success toast
       showToast("Lead successfully added", "success");
     } catch (error) {
       console.error("Error adding lead:", error);
@@ -72,14 +79,12 @@ const DealsPage = () => {
 
   /* ---------------- FIREBASE: FETCH LEADS ---------------- */
   useEffect(() => {
+    // Fetch active leads
     const q = query(collection(db, "leads"), where("status", "==", "new"));
-
     const unsub = onSnapshot(q, (snap) => {
       const data = snap.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-
-        // fields expected by existing UI
         value: "",
         closeDate: "",
         probability: "",
@@ -89,7 +94,21 @@ const DealsPage = () => {
       setLeads(data);
     });
 
-    return () => unsub();
+    // Fetch deleted leads
+    const qDeleted = query(collection(db, "leads"), where("status", "==", "deleted"));
+    const unsubDeleted = onSnapshot(qDeleted, (snap) => {
+      const data = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        deletedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+      }));
+      setDeletedLeads(data);
+    });
+
+    return () => {
+      unsub();
+      unsubDeleted();
+    };
   }, []);
 
   /* ---------------- DELETE (SOFT) ---------------- */
@@ -97,6 +116,7 @@ const DealsPage = () => {
     try {
       await updateDoc(doc(db, "leads", leadId), {
         status: "deleted",
+        updatedAt: serverTimestamp(),
       });
       showToast("Lead moved to recycle bin", "success");
     } catch (error) {
@@ -105,44 +125,80 @@ const DealsPage = () => {
     }
   };
 
-  /* ---------------- PROMOTE ---------------- */
-  const confirmPromote = async () => {
-    if (!assignee || !pipelineId) return;
-
+  /* ---------------- RESTORE FROM RECYCLE BIN ---------------- */
+  const handleRestoreLead = async (leadId) => {
     try {
-      await addDoc(collection(db, "pipelines", pipelineId, "deals"), {
-        ...promoteLead,
-        assignee,
-        leadId: promoteLead.id,
-        createdAt: serverTimestamp(),
+      await updateDoc(doc(db, "leads", leadId), {
+        status: "new",
+        updatedAt: serverTimestamp(),
       });
+      showToast("Lead restored successfully", "success");
+    } catch (error) {
+      console.error("Error restoring lead:", error);
+      showToast("Failed to restore lead", "error");
+    }
+  };
 
-      await updateDoc(doc(db, "leads", promoteLead.id), {
+  /* ---------------- PERMANENT DELETE ---------------- */
+  const handlePermanentDelete = async (leadId) => {
+    try {
+      await deleteDoc(doc(db, "leads", leadId));
+      showToast("Lead permanently deleted", "success");
+    } catch (error) {
+      console.error("Error permanently deleting lead:", error);
+      showToast("Failed to permanently delete lead", "error");
+    }
+  };
+
+  /* ---------------- PROMOTE ---------------- */
+  const handlePromoteLead = async (promotionData) => {
+    try {
+      const { leadId, pipelineId, stage, assignedTo, newPipeline } = promotionData;
+
+      // If creating a new pipeline, save it (in real app, this would be an API call)
+      if (newPipeline) {
+        // TODO: Save pipeline to database
+        console.log('Creating new pipeline:', newPipeline);
+      }
+
+      // Update lead status to promoted
+      await updateDoc(doc(db, "leads", leadId), {
         status: "promoted",
-        assignee,
         pipelineId,
+        stage,
+        assignee: assignedTo,
+        promotedAt: serverTimestamp(),
       });
 
-      setPromoteLead(null);
-      setAssignee("");
-      setPipelineId(DEFAULT_PIPELINE_ID);
-      
+      // In a real app, you'd also create the deal in the pipeline collection
+      // await addDoc(collection(db, "pipelines", pipelineId, "deals"), {...});
+
       showToast("Lead promoted to pipeline successfully", "success");
+      setPromoteLead(null);
     } catch (error) {
       console.error("Error promoting lead:", error);
       showToast("Failed to promote lead", "error");
     }
   };
 
+  /* ---------------- TEAM MEMBER MANAGEMENT ---------------- */
+  const handleAddMember = (member) => {
+    setTeamMembers([...teamMembers, member]);
+    showToast(`${member.name} added to team`, "success");
+  };
+
   const filteredAndSortedDeals = useMemo(() => leads, [leads]);
   const totalPages = Math.ceil(filteredAndSortedDeals.length / itemsPerPage);
 
   return (
-     <div className="min-h-screen bg-background">
-       <AppLayout>
-      <Helmet>
-        <title>Leads</title>
-      </Helmet>
+    <div className="min-h-screen bg-background">
+      <AppLayout
+        onRecycleBinOpen={() => setIsRecycleBinOpen(true)}
+        onAddMemberOpen={() => setIsAddMemberOpen(true)}
+      >
+        <Helmet>
+          <title>Leads</title>
+        </Helmet>
 
         <main className="lg:ml-6 pt-6">
           <div className="p-4 lg:p-6">
@@ -163,8 +219,8 @@ const DealsPage = () => {
             {/* FILTERS (UNCHANGED) */}
             <DealsFilters
               filters={{}}
-              onFiltersChange={() => {}}
-              onClearFilters={() => {}}
+              onFiltersChange={() => { }}
+              onClearFilters={() => { }}
               dealCount={filteredAndSortedDeals.length}
               selectedCount={selectedDeals.length}
             />
@@ -173,8 +229,8 @@ const DealsPage = () => {
             <DealsTable
               deals={filteredAndSortedDeals}
               selectedDeals={selectedDeals}
-              onSelectDeal={() => {}}
-              onSelectAll={() => {}}
+              onSelectDeal={() => { }}
+              onSelectAll={() => { }}
               onDealClick={(deal) => {
                 setSelectedDeal(deal);
                 setIsDrawerOpen(true);
@@ -204,41 +260,31 @@ const DealsPage = () => {
           onClose={() => setIsDrawerOpen(false)}
         />
 
-        {/* PROMOTE MODAL (MINIMAL JSX) */}
-        {promoteLead && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-card p-6 rounded-lg w-full max-w-sm">
-              <h3 className="text-lg font-semibold mb-4">Promote Lead</h3>
+        {/* PROMOTE MODAL */}
+        <PromoteLeadModal
+          isOpen={!!promoteLead}
+          onClose={() => setPromoteLead(null)}
+          onPromote={handlePromoteLead}
+          lead={promoteLead}
+        />
 
-              <select
-                className="w-full mb-3 border px-2 py-1"
-                value={assignee}
-                onChange={(e) => setAssignee(e.target.value)}
-              >
-                <option value="">Select Assignee</option>
-                {ASSIGNEES.map((a) => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
-              </select>
+        {/* RECYCLE BIN MODAL */}
+        <RecycleBin
+          isOpen={isRecycleBinOpen}
+          onClose={() => setIsRecycleBinOpen(false)}
+          deletedLeads={deletedLeads}
+          onRestore={handleRestoreLead}
+          onPermanentDelete={handlePermanentDelete}
+        />
 
-              <input
-                className="w-full mb-4 border px-2 py-1"
-                value={pipelineId}
-                onChange={(e) => setPipelineId(e.target.value)}
-              />
+        {/* ADD MEMBER MODAL */}
+        <AddMemberModal
+          isOpen={isAddMemberOpen}
+          onClose={() => setIsAddMemberOpen(false)}
+          onAddMember={handleAddMember}
+          members={teamMembers}
+        />
 
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setPromoteLead(null)}>
-                  Cancel
-                </Button>
-                <Button onClick={confirmPromote}>Promote</Button>
-              </div>
-            </div>
-          </div>
-        )}
-      
         {/* Add Lead Modal */}
         <AddLeadModal
           open={isAddLeadOpen}
@@ -249,7 +295,7 @@ const DealsPage = () => {
         {/* Toast Notifications */}
         <ToastContainer />
 
-    </AppLayout>
+      </AppLayout>
     </div>
   );
 };
