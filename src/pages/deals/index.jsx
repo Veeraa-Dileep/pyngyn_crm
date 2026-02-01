@@ -19,6 +19,8 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../firebase";
+import AddLeadModal from "../../components/modals/AddLeadModal";
+import { useToast } from "../../components/ui/Toast";
 
 const ASSIGNEES = ["Dileep", "Shankar"];
 const DEFAULT_PIPELINE_ID = "default-pipeline";
@@ -39,39 +41,33 @@ const DealsPage = () => {
   const [pipelineId, setPipelineId] = useState(DEFAULT_PIPELINE_ID);
   const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
 
-  const [newLead, setNewLead] = useState({
-    title: "",
-    name: "",
-    company: "",
-    mobile: "",
-    email: "",
-  });
+  // Toast notifications
+  const { showToast, ToastContainer } = useToast();
 
-  const handleCreateLead = async () => {
-    if (!newLead.name || !newLead.mobile) return;
+  const handleCreateLead = async (formData) => {
+    try {
+      await addDoc(collection(db, "leads"), {
+        title: formData.title,
+        name: formData.name,
+        company: formData.company,
+        mobile: formData.mobile,
+        email: formData.email,
+        source: formData.source, // Save source to database
+        status: "new",
+        notes: "",
+        assignee: null,
+        pipelineId: null,
+        createdAt: serverTimestamp(),
+      });
 
-    await addDoc(collection(db, "leads"), {
-      title: newLead.title,
-      name: newLead.name,
-      company: newLead.company,
-      mobile: newLead.mobile,
-      email: newLead.email,
-      source: "Manual",
-      status: "new",
-      notes: "",
-      assignee: null,
-      pipelineId: null,
-      createdAt: serverTimestamp(),
-    });
-
-    setIsAddLeadOpen(false);
-    setNewLead({
-      title: "",
-      name: "",
-      company: "",
-      mobile: "",
-      email: "",
-    });
+      setIsAddLeadOpen(false);
+      
+      // Show success toast
+      showToast("Lead successfully added", "success");
+    } catch (error) {
+      console.error("Error adding lead:", error);
+      showToast("Failed to add lead", "error");
+    }
   };
 
   /* ---------------- FIREBASE: FETCH LEADS ---------------- */
@@ -98,31 +94,44 @@ const DealsPage = () => {
 
   /* ---------------- DELETE (SOFT) ---------------- */
   const handleDeleteLead = async (leadId) => {
-    await updateDoc(doc(db, "leads", leadId), {
-      status: "deleted",
-    });
+    try {
+      await updateDoc(doc(db, "leads", leadId), {
+        status: "deleted",
+      });
+      showToast("Lead moved to recycle bin", "success");
+    } catch (error) {
+      console.error("Error deleting lead:", error);
+      showToast("Failed to delete lead", "error");
+    }
   };
 
   /* ---------------- PROMOTE ---------------- */
   const confirmPromote = async () => {
     if (!assignee || !pipelineId) return;
 
-    await addDoc(collection(db, "pipelines", pipelineId, "deals"), {
-      ...promoteLead,
-      assignee,
-      leadId: promoteLead.id,
-      createdAt: serverTimestamp(),
-    });
+    try {
+      await addDoc(collection(db, "pipelines", pipelineId, "deals"), {
+        ...promoteLead,
+        assignee,
+        leadId: promoteLead.id,
+        createdAt: serverTimestamp(),
+      });
 
-    await updateDoc(doc(db, "leads", promoteLead.id), {
-      status: "promoted",
-      assignee,
-      pipelineId,
-    });
+      await updateDoc(doc(db, "leads", promoteLead.id), {
+        status: "promoted",
+        assignee,
+        pipelineId,
+      });
 
-    setPromoteLead(null);
-    setAssignee("");
-    setPipelineId(DEFAULT_PIPELINE_ID);
+      setPromoteLead(null);
+      setAssignee("");
+      setPipelineId(DEFAULT_PIPELINE_ID);
+      
+      showToast("Lead promoted to pipeline successfully", "success");
+    } catch (error) {
+      console.error("Error promoting lead:", error);
+      showToast("Failed to promote lead", "error");
+    }
   };
 
   const filteredAndSortedDeals = useMemo(() => leads, [leads]);
@@ -230,63 +239,15 @@ const DealsPage = () => {
           </div>
         )}
       
-      {isAddLeadOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-card p-6 rounded-lg w-full max-w-sm">
-            <h3 className="text-lg font-semibold mb-4">Add New Lead</h3>
+        {/* Add Lead Modal */}
+        <AddLeadModal
+          open={isAddLeadOpen}
+          onClose={() => setIsAddLeadOpen(false)}
+          onSuccess={handleCreateLead}
+        />
 
-            <input
-              className="w-full mb-2 border px-2 py-1"
-              placeholder="Title"
-              value={newLead.title}
-              onChange={(e) =>
-                setNewLead({ ...newLead, title: e.target.value })
-              }
-            />
-
-            <input
-              className="w-full mb-2 border px-2 py-1"
-              placeholder="Name *"
-              value={newLead.name}
-              onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
-            />
-
-            <input
-              className="w-full mb-2 border px-2 py-1"
-              placeholder="Company"
-              value={newLead.company}
-              onChange={(e) =>
-                setNewLead({ ...newLead, company: e.target.value })
-              }
-            />
-
-            <input
-              className="w-full mb-2 border px-2 py-1"
-              placeholder="Mobile *"
-              value={newLead.mobile}
-              onChange={(e) =>
-                setNewLead({ ...newLead, mobile: e.target.value })
-              }
-            />
-
-            <input
-              className="w-full mb-4 border px-2 py-1"
-              placeholder="Email"
-              value={newLead.email}
-              onChange={(e) =>
-                setNewLead({ ...newLead, email: e.target.value })
-              }
-            />
-
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsAddLeadOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateLead}>Save</Button>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* Toast Notifications */}
+        <ToastContainer />
 
     </AppLayout>
     </div>
