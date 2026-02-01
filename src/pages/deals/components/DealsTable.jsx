@@ -12,7 +12,9 @@ const DealsTable = ({
   sortConfig, 
   onSort,
   currentPage,
-  itemsPerPage 
+  itemsPerPage,
+  onPromoteLead,
+  onDeleteLead
 }) => {
   const [hoveredRow, setHoveredRow] = useState(null);
 
@@ -26,12 +28,18 @@ const DealsTable = ({
   };
 
   const formatDate = (date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    })?.format(new Date(date));
-  };
+  if (!date) return '-';
+
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) return '-';
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(parsed);
+};
+
 
   const getStageColor = (stage) => {
     const colors = {
@@ -62,9 +70,17 @@ const DealsTable = ({
   };
 
   const handleQuickAction = (e, action, deal) => {
-    e?.stopPropagation();
-    console.log(`${action} action for deal:`, deal?.id);
-  };
+  e.stopPropagation();
+
+  if (action === 'promote') {
+    onPromoteLead(deal);
+  }
+
+  if (action === 'delete') {
+    onDeleteLead(deal.id);
+  }
+};
+
 
   const paginatedDeals = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -202,30 +218,27 @@ const DealsTable = ({
                 </td>
                 <td className="px-4 py-4">
                   <div className={`flex items-center space-x-1 transition-opacity ${hoveredRow === deal?.id ? 'opacity-100' : 'opacity-0'}`}>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => handleQuickAction(e, 'edit', deal)}
-                      className="h-8 w-8"
-                    >
-                      <Icon name="Edit" size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => handleQuickAction(e, 'clone', deal)}
-                      className="h-8 w-8"
-                    >
-                      <Icon name="Copy" size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => handleQuickAction(e, 'delete', deal)}
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                    >
-                      <Icon name="Trash2" size={14} />
-                    </Button>
+                   <Button
+  variant="ghost"
+  size="icon"
+  onClick={(e) => {
+    e.stopPropagation();
+    onPromoteLead(deal);
+  }}
+>
+  <Icon name="ArrowRight" size={14} />
+</Button>
+
+  <Button
+    variant="ghost"
+    size="icon"
+    onClick={(e) => {
+      e.stopPropagation();
+      onDeleteLead(deal.id);
+    }}
+  >
+    <Icon name="Trash2" size={14} />
+  </Button>
                   </div>
                 </td>
               </tr>
@@ -280,11 +293,11 @@ const DealsTable = ({
             </div>
 
             <div className="flex justify-end space-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => handleQuickAction(e, 'edit', deal)}
-              >
+             <Button
+  variant="ghost"
+  size="icon"
+  onClick={(e) => handleQuickAction(e, 'promote', deal)}
+>
                 <Icon name="Edit" size={14} className="mr-1" />
                 Edit
               </Button>

@@ -1,265 +1,312 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
-import Header from '../../components/ui/Header';
-import Sidebar from '../../components/ui/Sidebar';
-import Icon from '../../components/AppIcon';
-import Button from '../../components/ui/Button';
-import DealsTable from './components/DealsTable';
-import DealsFilters from './components/DealsFilters';
-import DealDrawer from './components/DealDrawer';
-import TablePagination from './components/TablePagination';
+import React, { useState, useMemo, useEffect } from "react";
+import { Helmet } from "react-helmet";
+import Header from "../../components/ui/Header";
+import Sidebar from "../../components/ui/Sidebar";
+import Icon from "../../components/AppIcon";
+import Button from "../../components/ui/Button";
+import DealsTable from "./components/DealsTable";
+import DealsFilters from "./components/DealsFilters";
+import DealDrawer from "./components/DealDrawer";
+import TablePagination from "./components/TablePagination";
+
+import {
+  collection,
+  onSnapshot,
+  updateDoc,
+  doc,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+} from "firebase/firestore";
+import { db } from "../../firebase";
+
+const ASSIGNEES = ["Dileep", "Shankar"];
+const DEFAULT_PIPELINE_ID = "default-pipeline";
 
 const DealsPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [leads, setLeads] = useState([]);
+
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedDeals, setSelectedDeals] = useState([]);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
-  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
-  const [filters, setFilters] = useState({
-    search: '',
-    stage: '',
-    owner: '',
-    minValue: '',
-    maxValue: '',
-    closeDateFrom: '',
-    closeDateTo: ''
+
+  // promote modal
+  const [promoteLead, setPromoteLead] = useState(null);
+  const [assignee, setAssignee] = useState("");
+  const [pipelineId, setPipelineId] = useState(DEFAULT_PIPELINE_ID);
+  const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
+
+  const [newLead, setNewLead] = useState({
+    title: "",
+    name: "",
+    company: "",
+    mobile: "",
+    email: "",
   });
 
-  // Mock deals data
-  const mockDeals = [
-   
-    {
-      id: 12,
-      name: 'Business Intelligence Suite',
-      account: 'Logistics Partners',
-      value: 85000,
-      owner: 'Michael Chen',
-      stage: 'Qualified',
-      closeDate: '2025-12-25',
-      probability: 19,
-      createdDate: '2025-10-05'
-    }
-  ];
+  const handleCreateLead = async () => {
+  if (!newLead.name || !newLead.mobile) return;
 
-  // Filter and sort deals
-  const filteredAndSortedDeals = useMemo(() => {
-    let filtered = mockDeals?.filter(deal => {
-      const matchesSearch = !filters?.search || 
-        deal?.name?.toLowerCase()?.includes(filters?.search?.toLowerCase()) ||
-        deal?.account?.toLowerCase()?.includes(filters?.search?.toLowerCase());
-      
-      const matchesStage = !filters?.stage || deal?.stage === filters?.stage;
-      const matchesOwner = !filters?.owner || deal?.owner === filters?.owner;
-      
-      const matchesMinValue = !filters?.minValue || deal?.value >= parseInt(filters?.minValue);
-      const matchesMaxValue = !filters?.maxValue || deal?.value <= parseInt(filters?.maxValue);
-      
-      const matchesCloseDateFrom = !filters?.closeDateFrom || 
-        new Date(deal.closeDate) >= new Date(filters.closeDateFrom);
-      const matchesCloseDateTo = !filters?.closeDateTo || 
-        new Date(deal.closeDate) <= new Date(filters.closeDateTo);
+  await addDoc(collection(db, 'leads'), {
+    title: newLead.title,
+    name: newLead.name,
+    company: newLead.company,
+    mobile: newLead.mobile,
+    email: newLead.email,
+    source: 'Manual',
+    status: 'new',
+    notes: '',
+    assignee: null,
+    pipelineId: null,
+    createdAt: serverTimestamp(),
+  });
 
-      return matchesSearch && matchesStage && matchesOwner && 
-             matchesMinValue && matchesMaxValue && 
-             matchesCloseDateFrom && matchesCloseDateTo;
-    });
+  setIsAddLeadOpen(false);
+  setNewLead({
+    title: '',
+    name: '',
+    company: '',
+    mobile: '',
+    email: '',
+  });
+};
 
-    // Sort deals
-    if (sortConfig?.key) {
-      filtered?.sort((a, b) => {
-        let aValue = a?.[sortConfig?.key];
-        let bValue = b?.[sortConfig?.key];
 
-        if (sortConfig?.key === 'value') {
-          aValue = parseInt(aValue);
-          bValue = parseInt(bValue);
-        } else if (sortConfig?.key === 'closeDate') {
-          aValue = new Date(aValue);
-          bValue = new Date(bValue);
-        } else if (typeof aValue === 'string') {
-          aValue = aValue?.toLowerCase();
-          bValue = bValue?.toLowerCase();
-        }
-
-        if (aValue < bValue) {
-          return sortConfig?.direction === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig?.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-
-    return filtered;
-  }, [filters, sortConfig]);
-
-  const totalPages = Math.ceil(filteredAndSortedDeals?.length / itemsPerPage);
-
-  const handleMenuToggle = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  const handleSidebarClose = () => {
-    setIsSidebarOpen(false);
-  };
-
-  const handleDealClick = (deal) => {
-    setSelectedDeal(deal);
-    setIsDrawerOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setIsDrawerOpen(false);
-    setSelectedDeal(null);
-  };
-
-  const handleSelectDeal = (dealId, isSelected) => {
-    if (isSelected) {
-      setSelectedDeals([...selectedDeals, dealId]);
-    } else {
-      setSelectedDeals(selectedDeals?.filter(id => id !== dealId));
-    }
-  };
-
-  const handleSelectAll = (isSelected) => {
-    if (isSelected) {
-      const currentPageDeals = filteredAndSortedDeals?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)?.map(deal => deal?.id);
-      setSelectedDeals([...new Set([...selectedDeals, ...currentPageDeals])]);
-    } else {
-      const currentPageDeals = filteredAndSortedDeals?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)?.map(deal => deal?.id);
-      setSelectedDeals(selectedDeals?.filter(id => !currentPageDeals?.includes(id)));
-    }
-  };
-
-  const handleSort = (key) => {
-    setSortConfig(prevConfig => ({
-      key,
-      direction: prevConfig?.key === key && prevConfig?.direction === 'asc' ? 'desc' : 'asc'
-    }));
-  };
-
-  const handleFiltersChange = (newFilters) => {
-    setFilters(newFilters);
-    setCurrentPage(1);
-  };
-
-  const handleClearFilters = () => {
-    setFilters({
-      search: '',
-      stage: '',
-      owner: '',
-      minValue: '',
-      maxValue: '',
-      closeDateFrom: '',
-      closeDateTo: ''
-    });
-    setCurrentPage(1);
-  };
-
-  const handleBulkAction = (action) => {
-    console.log(`Bulk action ${action} for deals:`, selectedDeals);
-    // Implement bulk actions here
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-  };
-
-  // Reset page when filters change
+  /* ---------------- FIREBASE: FETCH LEADS ---------------- */
   useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
+    const q = query(collection(db, "leads"), where("status", "==", "new"));
+
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+
+        // fields expected by existing UI
+        value: "",
+        closeDate: "",
+        probability: "",
+        stage: "New",
+        owner: doc.data().assignee || "",
+      }));
+      setLeads(data);
+    });
+
+    return () => unsub();
+  }, []);
+
+  /* ---------------- DELETE (SOFT) ---------------- */
+  const handleDeleteLead = async (leadId) => {
+    await updateDoc(doc(db, "leads", leadId), {
+      status: "deleted",
+    });
+  };
+
+  /* ---------------- PROMOTE ---------------- */
+  const confirmPromote = async () => {
+    if (!assignee || !pipelineId) return;
+
+    await addDoc(collection(db, "pipelines", pipelineId, "deals"), {
+      ...promoteLead,
+      assignee,
+      leadId: promoteLead.id,
+      createdAt: serverTimestamp(),
+    });
+
+    await updateDoc(doc(db, "leads", promoteLead.id), {
+      status: "promoted",
+      assignee,
+      pipelineId,
+    });
+
+    setPromoteLead(null);
+    setAssignee("");
+    setPipelineId(DEFAULT_PIPELINE_ID);
+  };
+
+  const filteredAndSortedDeals = useMemo(() => leads, [leads]);
+  const totalPages = Math.ceil(filteredAndSortedDeals.length / itemsPerPage);
 
   return (
     <>
       <Helmet>
         <title>Leads</title>
-        <meta name="description" content="Manage and track your sales deals with comprehensive filtering and pipeline management tools." />
       </Helmet>
+
       <div className="min-h-screen bg-background">
-        <Header onMenuToggle={handleMenuToggle} isSidebarOpen={isSidebarOpen} />
-        <Sidebar isOpen={isSidebarOpen} onClose={handleSidebarClose} />
-        
+        <Header
+          onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          isSidebarOpen={isSidebarOpen}
+        />
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+
         <main className="lg:ml-64 pt-16">
           <div className="p-4 lg:p-6">
-            {/* Page Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+            {/* PAGE HEADER */}
+            <div className="flex flex-col lg:flex-row justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Leads</h1>
-                <p className="text-muted-foreground mt-1">
+                <h1 className="text-2xl lg:text-3xl font-bold">Leads</h1>
+                <p className="text-muted-foreground">
                   Track and manage your sales opportunities
                 </p>
               </div>
-              <div className="flex items-center space-x-3">
-              
-                {/*
-                <Button variant="outline">
-                  <Icon name="Download" size={16} className="mr-2" />
-                  Export
-                </Button>
-                <Button variant="outline">
-                  <Icon name="GitBranch" size={16} className="mr-2" />
-                  Pipeline View
-                </Button>
-
-                */} 
-                <Button>
-                  <Icon name="Plus" size={16} className="mr-2" />
-                  New Lead
-                </Button>
-              </div>
+              <Button onClick={() => setIsAddLeadOpen(true)}>
+                <Icon name="Plus" size={16} className="mr-2" />
+                New Lead
+              </Button>
             </div>
 
-            {/* Filters */}
+            {/* FILTERS (UNCHANGED) */}
             <DealsFilters
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              onClearFilters={handleClearFilters}
-              dealCount={filteredAndSortedDeals?.length}
-              onBulkAction={handleBulkAction}
-              selectedCount={selectedDeals?.length}
+              filters={{}}
+              onFiltersChange={() => {}}
+              onClearFilters={() => {}}
+              dealCount={filteredAndSortedDeals.length}
+              selectedCount={selectedDeals.length}
             />
 
-            {/* Deals Table */}
+            {/* TABLE (UNCHANGED STRUCTURE) */}
             <DealsTable
               deals={filteredAndSortedDeals}
               selectedDeals={selectedDeals}
-              onSelectDeal={handleSelectDeal}
-              onSelectAll={handleSelectAll}
-              onDealClick={handleDealClick}
-              sortConfig={sortConfig}
-              onSort={handleSort}
+              onSelectDeal={() => {}}
+              onSelectAll={() => {}}
+              onDealClick={(deal) => {
+                setSelectedDeal(deal);
+                setIsDrawerOpen(true);
+              }}
+              onDeleteLead={handleDeleteLead}
+              onPromoteLead={setPromoteLead}
               currentPage={currentPage}
               itemsPerPage={itemsPerPage}
             />
 
-            {/* Pagination */}
+            {/* PAGINATION */}
             <TablePagination
               currentPage={currentPage}
               totalPages={totalPages}
-              totalItems={filteredAndSortedDeals?.length}
+              totalItems={filteredAndSortedDeals.length}
               itemsPerPage={itemsPerPage}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handleItemsPerPageChange}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
             />
           </div>
         </main>
 
-        {/* Deal Drawer */}
+        {/* DRAWER (UNCHANGED) */}
         <DealDrawer
           deal={selectedDeal}
           isOpen={isDrawerOpen}
-          onClose={handleDrawerClose}
+          onClose={() => setIsDrawerOpen(false)}
         />
+
+        {/* PROMOTE MODAL (MINIMAL JSX) */}
+        {promoteLead && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-card p-6 rounded-lg w-full max-w-sm">
+              <h3 className="text-lg font-semibold mb-4">Promote Lead</h3>
+
+              <select
+                className="w-full mb-3 border px-2 py-1"
+                value={assignee}
+                onChange={(e) => setAssignee(e.target.value)}
+              >
+                <option value="">Select Assignee</option>
+                {ASSIGNEES.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                className="w-full mb-4 border px-2 py-1"
+                value={pipelineId}
+                onChange={(e) => setPipelineId(e.target.value)}
+              />
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setPromoteLead(null)}>
+                  Cancel
+                </Button>
+                <Button onClick={confirmPromote}>Promote</Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+      {isAddLeadOpen && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-card p-6 rounded-lg w-full max-w-sm">
+      <h3 className="text-lg font-semibold mb-4">Add New Lead</h3>
+
+      <input
+        className="w-full mb-2 border px-2 py-1"
+        placeholder="Title"
+        value={newLead.title}
+        onChange={(e) =>
+          setNewLead({ ...newLead, title: e.target.value })
+        }
+      />
+
+      <input
+        className="w-full mb-2 border px-2 py-1"
+        placeholder="Name *"
+        value={newLead.name}
+        onChange={(e) =>
+          setNewLead({ ...newLead, name: e.target.value })
+        }
+      />
+
+      <input
+        className="w-full mb-2 border px-2 py-1"
+        placeholder="Company"
+        value={newLead.company}
+        onChange={(e) =>
+          setNewLead({ ...newLead, company: e.target.value })
+        }
+      />
+
+      <input
+        className="w-full mb-2 border px-2 py-1"
+        placeholder="Mobile *"
+        value={newLead.mobile}
+        onChange={(e) =>
+          setNewLead({ ...newLead, mobile: e.target.value })
+        }
+      />
+
+      <input
+        className="w-full mb-4 border px-2 py-1"
+        placeholder="Email"
+        value={newLead.email}
+        onChange={(e) =>
+          setNewLead({ ...newLead, email: e.target.value })
+        }
+      />
+
+      <div className="flex justify-end gap-2">
+        <Button
+          variant="outline"
+          onClick={() => setIsAddLeadOpen(false)}
+        >
+          Cancel
+        </Button>
+        <Button onClick={handleCreateLead}>
+          Save
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
+
     </>
   );
 };
