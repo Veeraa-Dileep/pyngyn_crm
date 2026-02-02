@@ -6,43 +6,22 @@ import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import PipelineCard from './components/PipelineCard';
 import CreatePipelineModal from './components/CreatePipelineModal';
+import { usePipelines } from '../../contexts/PipelineContext';
 
 const Pipelines = () => {
     const navigate = useNavigate();
+    const { pipelines, addPipeline, updatePipeline, deletePipeline } = usePipelines();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingPipeline, setEditingPipeline] = useState(null);
 
-    // Mock data for pipelines - will be replaced with API/database
-    const [pipelines, setPipelines] = useState([
-        {
-            id: 'sales-pipeline',
-            name: 'Sales Pipeline',
-            description: 'Main sales pipeline for all deals',
-            stages: [
-                { id: 'new', name: 'New', color: 'blue', order: 1 },
-                { id: 'qualified', name: 'Qualified', color: 'yellow', order: 2 },
-                { id: 'proposal', name: 'Proposal', color: 'purple', order: 3 },
-                { id: 'won', name: 'Won', color: 'green', order: 4 },
-                { id: 'lost', name: 'Lost', color: 'red', order: 5 }
-            ],
-            dealCount: 5,
-            totalValue: 625000,
-            isDefault: true,
-            createdAt: '2025-01-01T00:00:00Z'
+    const handleCreatePipeline = async (newPipeline) => {
+        try {
+            await addPipeline(newPipeline);
+            setIsCreateModalOpen(false);
+        } catch (error) {
+            console.error('Error creating pipeline:', error);
+            alert('Failed to create pipeline. Please try again.');
         }
-    ]);
-
-    const handleCreatePipeline = (newPipeline) => {
-        const pipeline = {
-            ...newPipeline,
-            id: `pipeline-${Date.now()}`,
-            dealCount: 0,
-            totalValue: 0,
-            isDefault: false,
-            createdAt: new Date().toISOString()
-        };
-        setPipelines([...pipelines, pipeline]);
-        setIsCreateModalOpen(false);
     };
 
     const handleEditPipeline = (pipeline) => {
@@ -50,17 +29,20 @@ const Pipelines = () => {
         setIsCreateModalOpen(true);
     };
 
-    const handleUpdatePipeline = (updatedPipeline) => {
-        setPipelines(pipelines.map(p =>
-            p.id === updatedPipeline.id ? updatedPipeline : p
-        ));
-        setEditingPipeline(null);
-        setIsCreateModalOpen(false);
+    const handleUpdatePipeline = async (updatedPipeline) => {
+        try {
+            await updatePipeline(updatedPipeline);
+            setEditingPipeline(null);
+            setIsCreateModalOpen(false);
+        } catch (error) {
+            console.error('Error updating pipeline:', error);
+            alert('Failed to update pipeline. Please try again.');
+        }
     };
 
     const handleDeletePipeline = (pipelineId) => {
         if (window.confirm('Are you sure you want to delete this pipeline? All associated deals will be lost.')) {
-            setPipelines(pipelines.filter(p => p.id !== pipelineId));
+            deletePipeline(pipelineId);
         }
     };
 

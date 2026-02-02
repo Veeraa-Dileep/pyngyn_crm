@@ -3,34 +3,24 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
 
-const Sidebar = ({ isOpen = false, onClose, onRecycleBinOpen, onAddMemberOpen }) => {
+const Sidebar = ({ isOpen = false, isCompressed = false, onClose, onRecycleBinOpen, onAddMemberOpen }) => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  // ── Sidebar compression state ───────────────────────────────────────────
-  const [isCompressed, setIsCompressed] = useState(() => {
-    const saved = localStorage.getItem('sidebar-compressed');
-    return saved === 'true';
-  });
-
-
-  // Save compression state to localStorage
-  useEffect(() => {
-    localStorage.setItem('sidebar-compressed', isCompressed);
-  }, [isCompressed]);
 
   // ── Static nav items ──────────────────────────────────────────────────
   const topNavItems = [
     { label: 'Home', path: '/home', icon: 'Home' },
+    { label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
     { label: 'Leads', path: '/Leads', icon: 'Target' },
-    { label: 'Pipelines', path: '/pipelines', icon: 'Kanban' },
+    
   ];
 
   const NavItems2 = [
-    { label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
+    { label: 'Pipelines', path: '/pipelines', icon: 'Kanban' },
+    
   ];
   const BottomNavItems = [
-    { label: 'Add Members', action: 'ADD_MEMBERS', icon: 'UserPlus' },
+    { label: 'Manage Members', action: 'ADD_MEMBERS', icon: 'UserPlus' },
     { label: 'Recycle Bin', action: 'RECYCLE_BIN', icon: 'Trash2' },
   ];
   const handleNavigation = (path) => {
@@ -96,38 +86,7 @@ const Sidebar = ({ isOpen = false, onClose, onRecycleBinOpen, onAddMemberOpen })
         <div className="flex flex-col h-full">
 
           {/* ── Header ── */}
-          <div className="flex items-center justify-center py-3 mr-3">
-            <div className="mt-auto ">
-              <button
-                onClick={() => setIsCompressed(!isCompressed)}
-                className={`
-                w-full flex items-center ${isCompressed ? 'justify-center' : 'justify-between'} px-2.5 py-4 
-                text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted
-                transition-smooth group hidden lg:flex
-              `}
-                aria-label={isCompressed ? 'Expand sidebar' : 'Collapse sidebar'}
-                title={isCompressed ? 'Expand sidebar' : 'Collapse sidebar'}
-              >
-                {!isCompressed && <span></span>}
-                <Icon
-                  name={isCompressed ? 'ChevronRight' : 'ChevronLeft'}
-                  size={18}
-                  className="text-muted-foreground group-hover:text-foreground "
-                />
-              </button>
-            </div>
-
-            <div className="flex items-center space-x-3">
-
-
-              {!isCompressed &&
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <Icon name="Zap" size={20} color="white" />
-                </div>
-              }
-              {!isCompressed && <span className="text-lg font-semibold text-foreground ">PYNGYN CRM</span>}
-
-            </div>
+          <div className="py-4">
             {/* Mobile close button */}
             {!isCompressed && (
               <Button variant="ghost" size="icon" onClick={onClose} className="lg:hidden absolute right-4 top-6" aria-label="Close navigation menu">
@@ -137,7 +96,7 @@ const Sidebar = ({ isOpen = false, onClose, onRecycleBinOpen, onAddMemberOpen })
           </div>
 
           {/* ── Navigation ── */}
-          <nav className="flex-1 overflow-y-auto py-4">
+          <nav className="flex-1 overflow-y-auto py-4 mt-10">
             <div className="px-3 space-y-1">
 
               {/* Home, Leads & Pipelines */}

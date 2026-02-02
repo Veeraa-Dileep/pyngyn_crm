@@ -107,14 +107,21 @@ const CreatePipelineModal = ({ isOpen, onClose, onSave, pipeline }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validate()) {
             const pipelineData = {
-                ...formData,
-                id: pipeline?.id
+                name: formData.name,
+                description: formData.description,
+                stages: formData.stages
             };
-            onSave(pipelineData);
+
+            // Only include id when editing existing pipeline
+            if (pipeline?.id) {
+                pipelineData.id = pipeline.id;
+            }
+
+            await onSave(pipelineData);
         }
     };
 

@@ -31,8 +31,8 @@ const Dashboard = () => {
   const kpiData = [
     {
       title: 'Open Deals',
-      value: '247',
-      change: '+12.5%',
+      value: '0',
+      change: '+0%',
       changeType: 'positive',
       icon: 'Target',
       iconBg: 'bg-blue-100',
@@ -40,8 +40,8 @@ const Dashboard = () => {
     },
     {
       title: 'New Leads',
-      value: '89',
-      change: '+8.2%',
+      value: '0',
+      change: '+0%',
       changeType: 'positive',
       icon: 'Users',
       iconBg: 'bg-pink-100',
@@ -49,8 +49,8 @@ const Dashboard = () => {
     },
     {
       title: 'Forecast Revenue',
-      value: '$2.4M',
-      change: '+15.3%',
+      value: '$ 0M',
+      change: '+0%',
       changeType: 'positive',
       icon: 'DollarSign',
       iconBg: 'bg-yellow-100',
@@ -102,17 +102,17 @@ const Dashboard = () => {
                 <PipelineChart />
               </div>
 
-              {/* Recent Activities */}
+              {/* Recent Activities 
               <div className="mb-8">
                 <RecentActivities />
-              </div>
+              </div>*/}
             </motion.div>
           </div>
 
-          {/* Right Rail */}
+          {/* Right Rail 
           <div className="hidden xl:block w-80 p-6 border-l border-border bg-background">
             <RightRail />
-          </div>
+          </div>*/}
         </div>
       </main>
       </AppLayout>

@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
 
-const Header = ({ onMenuToggle, isSidebarOpen = false, isSidebarCompressed = false }) => {
+const Header = ({ onMenuToggle, onSidebarToggle, isSidebarOpen = false, isSidebarCompressed = false }) => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isHelpDropdownOpen, setIsHelpDropdownOpen] = useState(false);
   const location = useLocation();
@@ -41,15 +41,26 @@ const Header = ({ onMenuToggle, isSidebarOpen = false, isSidebarCompressed = fal
     handleDropdownClose();
   };
 
-    
+
   return (
     <>
-      <header className={`fixed top-0 ${isSidebarCompressed ? 'lg:left-16' : 'lg:left-64'} left-0 right-0 h-16 bg-background border-b border-border z-40 transition-all duration-300`}>
+      <header className={`fixed top-0  left-0 right-0 h-16 bg-background border-b border-border z-40 transition-all duration-300`}>
         <div className="flex items-center justify-between h-full px-4 lg:px-6">
-          
-                
-          {/* Left Section - Mobile Menu & Logo */}
-          <div className="flex items-center space-x-4">
+
+
+          {/* Left Section - Menu & Logo */}
+          <div className="flex items-center space-x-3">
+            {/* Desktop Sidebar Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onSidebarToggle}
+              className="hidden lg:flex"
+              aria-label={isSidebarCompressed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <Icon name="Menu" size={20} />
+            </Button>
+
             {/* Mobile Menu Button */}
             <Button
               variant="ghost"
@@ -60,28 +71,14 @@ const Header = ({ onMenuToggle, isSidebarOpen = false, isSidebarCompressed = fal
             >
               <Icon name={isSidebarOpen ? "X" : "Menu"} size={20} />
             </Button>
-            
 
-            {/* Mobile Logo - Only visible on mobile */}
-            <div className="flex items-center space-x-3 lg:hidden">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Icon name="Zap" size={20} color="white" />
+            {/* Logo - Always visible */}
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8  rounded-lg flex items-center justify-center">
+                <img src="src/assets/pyngyn_logo_wo_name.png" alt="P" />
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-lg font-semibold text-foreground">pyngyn</span>
-                
-              </div>
+              <span className="text-lg font-semibold text-foreground">PYNGYN CRM</span>
             </div>
-
-            {/* Desktop Logo - Only visible when sidebar is compressed */}
-            {isSidebarCompressed && (
-              <div className="hidden lg:flex items-center space-x-3">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <Icon name="Zap" size={20} color="white" />
-                </div>
-                <span className="text-lg font-semibold text-foreground">PYNGYN CRM</span>
-              </div>
-            )}
           </div>
 
           {/* Right Section - Actions & User */}

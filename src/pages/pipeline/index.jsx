@@ -9,17 +9,20 @@ import PipelineFilters from './components/PipelineFilters';
 import AddDealModal from './components/AddDealModal';
 import PipelineStats from './components/PipelineStats';
 import PipelineListView from './components/PipelineListView';
+import { usePipelines } from '../../contexts/PipelineContext';
+import { useDeals } from '../../contexts/DealsContext';
 
 const Pipeline = () => {
   const { pipelineId } = useParams();
   const navigate = useNavigate();
+  const { getPipeline, pipelines } = usePipelines();
+  const { getDealsByPipeline, addDeal, updateDeal, deleteDeal, moveDeal } = useDeals();
 
   // State for current pipeline
   const [currentPipeline, setCurrentPipeline] = useState(null);
   const [isAddDealModalOpen, setIsAddDealModalOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState(null);
   const [viewMode, setViewMode] = useState('board'); // 'board' or 'list'
-  const [deals, setDeals] = useState([]);
   const [filters, setFilters] = useState({
     search: '',
     owner: 'all',
@@ -31,26 +34,10 @@ const Pipeline = () => {
     endDate: ''
   });
 
-  // Mock pipelines data - in real app, this would come from API/database
-  const mockPipelines = [
-    {
-      id: 'sales-pipeline',
-      name: 'Sales Pipeline',
-      description: 'Main sales pipeline for all deals',
-      stages: [
-        { id: 'new', name: 'New', color: 'blue' },
-        { id: 'qualified', name: 'Qualified', color: 'yellow' },
-        { id: 'proposal', name: 'Proposal', color: 'purple' },
-        { id: 'won', name: 'Won', color: 'green' },
-        { id: 'lost', name: 'Lost', color: 'red' }
-      ]
-    }
-  ];
-
   // Load pipeline data when pipelineId changes
   useEffect(() => {
     if (pipelineId) {
-      const pipeline = mockPipelines.find(p => p.id === pipelineId);
+      const pipeline = getPipeline(pipelineId);
       if (pipeline) {
         setCurrentPipeline(pipeline);
       } else {
@@ -58,41 +45,17 @@ const Pipeline = () => {
         navigate('/pipelines');
       }
     } else {
-      // No pipelineId, use default or redirect
-      setCurrentPipeline(mockPipelines[0]);
+      // No pipelineId, use default (first pipeline)
+      if (pipelines.length > 0) {
+        setCurrentPipeline(pipelines[0]);
+      }
     }
-  }, [pipelineId, navigate]);
+  }, [pipelineId, navigate, getPipeline, pipelines]);
 
   // Get stages from current pipeline
   const pipelineStages = currentPipeline?.stages || [];
 
 
-  // Mock deals data
-  const mockDeals = [
-    {
-      id: 'deal-1',
-      title: 'Enterprise Software License',
-      accountName: 'TechCorp Solutions',
-      value: 125000,
-      owner: {
-        id: 'john-doe',
-        name: 'John Doe',
-        avatar: "https://images.unsplash.com/photo-1588178457501-31b7688a41a0",
-        avatarAlt: 'Professional headshot of John Doe in navy suit with short brown hair'
-      },
-      closeDate: '2025-01-15',
-      priority: 'High',
-      probability: 85,
-      stage: 'new',
-      tags: ['Enterprise', 'Software', 'Renewal'],
-      createdAt: '2024-12-01T10:00:00Z',
-      updatedAt: '2025-01-02T14:30:00Z'
-    },];
-
-
-  useEffect(() => {
-    setDeals(mockDeals);
-  }, []);
 
   const handleSidebarToggle = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -108,17 +71,15 @@ const Pipeline = () => {
   };
 
   const handleSaveDeal = (newDeal) => {
-    setDeals((prevDeals) => [...prevDeals, newDeal]);
+    if (currentPipeline) {
+      addDeal(currentPipeline.id, newDeal);
+    }
   };
 
   const handleDealMove = (dealId, newStageId) => {
-    setDeals((prevDeals) =>
-      prevDeals?.map((deal) =>
-        deal?.id === dealId ?
-          { ...deal, stage: newStageId, updatedAt: new Date()?.toISOString() } :
-          deal
-      )
-    );
+    if (currentPipeline) {
+      moveDeal(dealId, currentPipeline.id, currentPipeline.id, newStageId);
+    }
   };
 
   const handleEditDeal = (deal) => {
@@ -128,19 +89,20 @@ const Pipeline = () => {
 
   const handleDeleteDeal = (dealId) => {
     if (window.confirm('Are you sure you want to delete this deal?')) {
-      setDeals((prevDeals) => prevDeals?.filter((deal) => deal?.id !== dealId));
+      if (currentPipeline) {
+        deleteDeal(currentPipeline.id, dealId);
+      }
     }
   };
 
   const handleCloneDeal = (deal) => {
     const clonedDeal = {
       ...deal,
-      id: `deal-${Date.now()}`,
       title: `${deal?.title} (Copy)`,
-      createdAt: new Date()?.toISOString(),
-      updatedAt: new Date()?.toISOString()
     };
-    setDeals((prevDeals) => [...prevDeals, clonedDeal]);
+    if (currentPipeline) {
+      addDeal(currentPipeline.id, clonedDeal);
+    }
   };
 
   const handleFiltersChange = (newFilters) => {
@@ -161,6 +123,7 @@ const Pipeline = () => {
   };
 
   const getFilteredDeals = () => {
+    const deals = currentPipeline ? getDealsByPipeline(currentPipeline.id) : [];
     return deals?.filter((deal) => {
       // Search filter
       if (filters?.search && !deal?.title?.toLowerCase()?.includes(filters?.search?.toLowerCase()) &&

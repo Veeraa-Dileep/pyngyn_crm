@@ -50,40 +50,36 @@ const PipelineCard = ({ pipeline, onClick, onEdit, onDelete }) => {
                     >
                         <Icon name="Edit2" size={14} />
                     </Button>
-                    {!pipeline.isDefault && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleDelete}
-                            className="h-7 w-7 text-destructive hover:text-destructive"
-                            aria-label="Delete pipeline"
-                        >
-                            <Icon name="Trash2" size={14} />
-                        </Button>
-                    )}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleDelete}
+                        className="h-7 w-7 text-destructive hover:text-destructive"
+                        aria-label="Delete pipeline"
+                    >
+                        <Icon name="Trash2" size={14} />
+                    </Button>
                 </div>
             )}
 
             {/* Header */}
-            <div className="flex items-start space-x-3 mb-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                    <Icon name="Kanban" size={24} className="text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                        <h3 className="font-semibold text-foreground text-lg truncate">{pipeline.name}</h3>
-                        {pipeline.isDefault && (
-                            <span className="px-2 py-0.5 text-xs font-semibold bg-primary/10 text-primary rounded-full">
-                                Default
-                            </span>
+            <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Icon name="GitBranch" size={20} className="text-primary" />
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-foreground flex items-center space-x-2">
+                            <span>{pipeline.name}</span>
+                        </h3>
+                        {pipeline.description && (
+                            <p className="text-sm text-muted-foreground mt-0.5">
+                                {pipeline.description}
+                            </p>
                         )}
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                        {pipeline.description || 'No description'}
-                    </p>
                 </div>
             </div>
-
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3 mb-4">
                 <div>

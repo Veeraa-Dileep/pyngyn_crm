@@ -15,24 +15,24 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-       <AppLayout>
-      <Helmet>
-        <title>Pyngyn CRM</title>
-      </Helmet>
+      <AppLayout>
+        <Helmet>
+          <title>PYNGYN CRM</title>
+        </Helmet>
 
-      <div className="p-12 space-y-12">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Welcome Team
-            </h1>
-            <p className="text-muted-foreground">
-              Collaborative CRM for Modern Teams
-            </p>
+        <div className="p-12 space-y-12">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                Welcome Team
+              </h1>
+              <p className="text-muted-foreground">
+                Collaborative CRM for Modern Teams
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </AppLayout>
+      </AppLayout>
 
     </div>
   );

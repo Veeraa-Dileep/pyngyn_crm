@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import Icon from './AppIcon';
 import Button from './ui/Button';
 import Input from './ui/Input';
+import { useMembers } from '../contexts/MembersContext';
 
-const AddMemberModal = ({ isOpen, onClose, onAddMember, members }) => {
+const AddMemberModal = ({ isOpen, onClose, member }) => {
+    const { addMember, updateMember } = useMembers();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -13,25 +15,21 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, members }) => {
     const roles = [
         'Sales Rep',
         'Sales Manager',
-        'Account Executive',
-        'Business Development',
-        'Customer Success',
-        'Support Agent'
-    ];
-
-    const colors = [
-        '#4F46E5', '#7C3AED', '#DB2777', '#DC2626', '#EA580C',
-        '#D97706', '#CA8A04', '#65A30D', '#16A34A', '#059669',
-        '#0891B2', '#0284C7', '#2563EB', '#4F46E5'
     ];
 
     useEffect(() => {
-        if (!isOpen) {
+        if (member) {
+            setFormData({
+                name: member.name,
+                email: member.email,
+                role: member.role
+            });
+        } else {
             setFormData({ name: '', email: '', role: 'Sales Rep' });
         }
-    }, [isOpen]);
+    }, [member, isOpen]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!formData.name.trim() || !formData.email.trim()) {
@@ -39,15 +37,21 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, members }) => {
             return;
         }
 
-        const newMember = {
-            id: `member-${Date.now()}`,
-            ...formData,
-            color: colors[members.length % colors.length],
-            createdAt: new Date().toISOString()
-        };
-
-        onAddMember(newMember);
-        onClose();
+        try {
+            if (member) {
+                // Update existing member
+                await updateMember({
+                    ...member,
+                    ...formData
+                });
+            } else {
+                // Add new member
+                await addMember(formData);
+            }
+            onClose();
+        } catch (error) {
+            alert(`Failed to ${member ? 'update' : 'add'} member. Please try again.`);
+        }
     };
 
     if (!isOpen) return null;
@@ -58,9 +62,11 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, members }) => {
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-border flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl font-bold text-foreground">Add Team Member</h2>
+                        <h2 className="text-xl font-bold text-foreground">
+                            {member ? 'Edit Team Member' : 'Add Team Member'}
+                        </h2>
                         <p className="text-sm text-muted-foreground mt-0.5">
-                            Add a new member to your team
+                            {member ? 'Update member details' : 'Add a new member to your team'}
                         </p>
                     </div>
                     <button
@@ -77,7 +83,7 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, members }) => {
                         label="Full Name"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="John Doe"
+                        placeholder="Enter your name"
                         required
                     />
 
@@ -86,7 +92,7 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, members }) => {
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="john@example.com"
+                        placeholder="Enter your email"
                         required
                     />
 
@@ -117,11 +123,11 @@ const AddMemberModal = ({ isOpen, onClose, onAddMember, members }) => {
                         <Button
                             type="submit"
                             variant="default"
-                            iconName="UserPlus"
+                            iconName={member ? "Save" : "UserPlus"}
                             iconPosition="left"
                             iconSize={16}
                         >
-                            Add Member
+                            {member ? 'Save Changes' : 'Add Member'}
                         </Button>
                     </div>
                 </form>

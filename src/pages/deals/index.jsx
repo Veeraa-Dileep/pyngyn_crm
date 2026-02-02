@@ -25,11 +25,15 @@ import {
 import { db } from "../../firebase";
 import AddLeadModal from "../../components/modals/AddLeadModal";
 import { useToast } from "../../components/ui/Toast";
+import { usePipelines } from '../../contexts/PipelineContext';
+import { useDeals } from '../../contexts/DealsContext';
 
 const ASSIGNEES = ["Dileep", "Shankar"];
 const DEFAULT_PIPELINE_ID = "default-pipeline";
 
 const DealsPage = () => {
+  const { pipelines } = usePipelines();
+  const { addDeal } = useDeals();
   const [leads, setLeads] = useState([]);
   const [deletedLeads, setDeletedLeads] = useState([]);
   const [teamMembers, setTeamMembers] = useState([
@@ -153,15 +157,15 @@ const DealsPage = () => {
   /* ---------------- PROMOTE ---------------- */
   const handlePromoteLead = async (promotionData) => {
     try {
-      const { leadId, pipelineId, stage, assignedTo, newPipeline } = promotionData;
+      const { leadId, pipelineId, stage, assignedTo, pipelineName } = promotionData;
+      const lead = leads.find(l => l.id === leadId);
 
-      // If creating a new pipeline, save it (in real app, this would be an API call)
-      if (newPipeline) {
-        // TODO: Save pipeline to database
-        console.log('Creating new pipeline:', newPipeline);
+      if (!lead) {
+        showToast("Lead not found", "error");
+        return;
       }
 
-      // Update lead status to promoted
+      // Update lead status to promoted in Firebase
       await updateDoc(doc(db, "leads", leadId), {
         status: "promoted",
         pipelineId,
@@ -170,10 +174,30 @@ const DealsPage = () => {
         promotedAt: serverTimestamp(),
       });
 
-      // In a real app, you'd also create the deal in the pipeline collection
-      // await addDoc(collection(db, "pipelines", pipelineId, "deals"), {...});
+      // Create a deal from the lead using DealsContext
+      const newDeal = {
+        title: lead.name || lead.company || 'Untitled Deal',
+        accountName: lead.company || lead.name || 'Unknown',
+        value: lead.value || 0,
+        owner: {
+          id: assignedTo || 'unassigned',
+          name: teamMembers.find(m => m.id === assignedTo)?.name || 'Unassigned',
+          avatar: '',
+          avatarAlt: ''
+        },
+        closeDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+        priority: 'Medium',
+        probability: 50,
+        stage: stage,
+        tags: [lead.source || 'Lead'],
+        email: lead.email,
+        mobile: lead.mobile,
+        leadId: leadId
+      };
 
-      showToast("Lead promoted to pipeline successfully", "success");
+      addDeal(pipelineId, newDeal);
+
+      showToast(`Lead promoted to ${pipelineName} successfully`, "success");
       setPromoteLead(null);
     } catch (error) {
       console.error("Error promoting lead:", error);

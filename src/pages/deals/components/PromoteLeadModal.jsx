@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import { usePipelines } from '../../../contexts/PipelineContext';
+import { useMembers } from '../../../contexts/MembersContext';
 
 const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
+    const { pipelines, addPipeline } = usePipelines();
+    const { members } = useMembers();
     const [selectedPipelineId, setSelectedPipelineId] = useState('');
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const [newPipelineName, setNewPipelineName] = useState('');
@@ -11,41 +15,19 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
     const [selectedStage, setSelectedStage] = useState('');
     const [assignedTo, setAssignedTo] = useState('');
 
-    // Mock pipelines - in real app, this would come from API/store
-    const [availablePipelines, setAvailablePipelines] = useState([
-        {
-            id: 'sales-pipeline',
-            name: 'Sales Pipeline',
-            stages: [
-                { id: 'new', name: 'New' },
-                { id: 'qualified', name: 'Qualified' },
-                { id: 'proposal', name: 'Proposal' },
-                { id: 'won', name: 'Won' },
-                { id: 'lost', name: 'Lost' }
-            ]
-        }
-    ]);
-
-    // Mock team members - in real app, this would come from API/store
-    const teamMembers = [
-        { id: '1', name: 'John Doe' },
-        { id: '2', name: 'Jane Smith' },
-        { id: '3', name: 'Mike Johnson' }
-    ];
-
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && pipelines.length > 0) {
             // Reset form when modal opens
-            setSelectedPipelineId(availablePipelines[0]?.id || '');
+            setSelectedPipelineId(pipelines[0]?.id || '');
             setIsCreatingNew(false);
             setNewPipelineName('');
             setNewPipelineDescription('');
             setSelectedStage('new');
             setAssignedTo('');
         }
-    }, [isOpen, availablePipelines]);
+    }, [isOpen, pipelines]);
 
-    const selectedPipeline = availablePipelines.find(p => p.id === selectedPipelineId);
+    const selectedPipeline = pipelines.find(p => p.id === selectedPipelineId);
 
     const handlePipelineChange = (value) => {
         if (value === 'create-new') {
@@ -55,22 +37,21 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
             setIsCreatingNew(false);
             setSelectedPipelineId(value);
             // Reset stage to first stage of selected pipeline
-            const pipeline = availablePipelines.find(p => p.id === value);
+            const pipeline = pipelines.find(p => p.id === value);
             if (pipeline?.stages?.length > 0) {
                 setSelectedStage(pipeline.stages[0].id);
             }
         }
     };
 
-    const handlePromote = () => {
+    const handlePromote = async () => {
         if (isCreatingNew) {
             if (!newPipelineName.trim()) {
                 alert('Please enter a pipeline name');
                 return;
             }
-            // Create new pipeline and promote
+            // Create new pipeline using context
             const newPipeline = {
-                id: `pipeline-${Date.now()}`,
                 name: newPipelineName,
                 description: newPipelineDescription,
                 stages: [
@@ -82,13 +63,16 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
                 ]
             };
 
+            // Wait for pipeline to be created and get the ID
+            const createdPipeline = await addPipeline(newPipeline);
+
             onPromote({
                 leadId: lead.id,
-                pipelineId: newPipeline.id,
-                pipelineName: newPipeline.name,
+                pipelineId: createdPipeline.id,
+                pipelineName: createdPipeline.name,
                 stage: 'new',
                 assignedTo,
-                newPipeline
+                newPipeline: createdPipeline
             });
         } else {
             if (!selectedPipelineId || !selectedStage) {
@@ -141,7 +125,7 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
                             onChange={(e) => handlePipelineChange(e.target.value)}
                             className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         >
-                            {availablePipelines.map(pipeline => (
+                            {pipelines.map(pipeline => (
                                 <option key={pipeline.id} value={pipeline.id}>
                                     {pipeline.name}
                                 </option>
@@ -216,7 +200,7 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
                             className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         >
                             <option value="">Unassigned</option>
-                            {teamMembers.map(member => (
+                            {members.map(member => (
                                 <option key={member.id} value={member.id}>
                                     {member.name}
                                 </option>
