@@ -10,6 +10,7 @@ import TablePagination from "./components/TablePagination";
 import PromoteLeadModal from "./components/PromoteLeadModal";
 import RecycleBin from "./components/RecycleBin";
 import AddMemberModal from "../../components/AddMemberModal";
+import ImportLeadsModal from "./components/ImportLeadsModal";
 
 import {
   collection,
@@ -48,11 +49,15 @@ const DealsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
 
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
   // Modal states
   const [promoteLead, setPromoteLead] = useState(null);
   const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
   const [isRecycleBinOpen, setIsRecycleBinOpen] = useState(false);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   // Toast notifications
   const { showToast, ToastContainer } = useToast();
@@ -211,7 +216,79 @@ const DealsPage = () => {
     showToast(`${member.name} added to team`, "success");
   };
 
-  const filteredAndSortedDeals = useMemo(() => leads, [leads]);
+  /* ---------------- IMPORT LEADS ---------------- */
+  const handleImportLeads = async (leadsToImport) => {
+    const batchSize = 50;
+    const promises = [];
+
+    for (let i = 0; i < leadsToImport.length; i += batchSize) {
+      const batch = leadsToImport.slice(i, i + batchSize);
+
+      const batchPromises = batch.map(lead => {
+        // Generate title in format "{name/company}'s Opportunity"
+        const displayName = lead.name || lead.company || 'Unknown';
+        const title = `${displayName}'s Opportunity`;
+
+        return addDoc(collection(db, "leads"), {
+          title,
+          name: lead.name || '',
+          company: lead.company || '',
+          email: lead.email,
+          mobile: lead.mobile || '',
+          source: lead.source || 'Imported',
+          status: "new",
+          notes: "",
+          assignee: null,
+          pipelineId: null,
+          createdAt: serverTimestamp(),
+        });
+      });
+
+      promises.push(...batchPromises);
+    }
+
+    await Promise.all(promises);
+  };
+
+  /* ---------------- SORTING ---------------- */
+  const handleSort = (key) => {
+    setSortConfig((prevConfig) => ({
+      key,
+      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const filteredAndSortedDeals = useMemo(() => {
+    if (!sortConfig.key) return leads;
+
+    const sorted = [...leads].sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+
+      // Handle date sorting for createdAt
+      if (sortConfig.key === 'createdAt') {
+        // Convert Firestore Timestamp to Date if needed
+        const aDate = aValue?.toDate ? aValue.toDate() : new Date(aValue || 0);
+        const bDate = bValue?.toDate ? bValue.toDate() : new Date(bValue || 0);
+        return sortConfig.direction === 'asc'
+          ? aDate - bDate
+          : bDate - aDate;
+      }
+
+      // Handle string sorting for source
+      if (sortConfig.key === 'source') {
+        aValue = (aValue || '').toLowerCase();
+        bValue = (bValue || '').toLowerCase();
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      }
+
+      return 0;
+    });
+
+    return sorted;
+  }, [leads, sortConfig]);
   const totalPages = Math.ceil(filteredAndSortedDeals.length / itemsPerPage);
 
   return (
@@ -234,10 +311,16 @@ const DealsPage = () => {
                   Track and manage your sales opportunities
                 </p>
               </div>
-              <Button onClick={() => setIsAddLeadOpen(true)}>
-                <Icon name="Plus" size={16} className="mr-2" />
-                New Lead
-              </Button>
+              <div className="flex gap-4">
+                <Button onClick={() => setIsImportOpen(true)}>
+                  <Icon name="Import" size={16} className="mr-2" />
+                  Import Leads
+                </Button>
+                <Button onClick={() => setIsAddLeadOpen(true)}>
+                  <Icon name="Plus" size={16} className="mr-2" />
+                  New Lead
+                </Button>
+              </div>
             </div>
 
             {/* FILTERS (UNCHANGED) */}
@@ -261,6 +344,8 @@ const DealsPage = () => {
               }}
               onDeleteLead={handleDeleteLead}
               onPromoteLead={setPromoteLead}
+              sortConfig={sortConfig}
+              onSort={handleSort}
               currentPage={currentPage}
               itemsPerPage={itemsPerPage}
             />
@@ -307,6 +392,14 @@ const DealsPage = () => {
           onClose={() => setIsAddMemberOpen(false)}
           onAddMember={handleAddMember}
           members={teamMembers}
+        />
+
+        {/* IMPORT LEADS MODAL */}
+        <ImportLeadsModal
+          isOpen={isImportOpen}
+          onClose={() => setIsImportOpen(false)}
+          existingLeads={leads}
+          onImport={handleImportLeads}
         />
 
         {/* Add Lead Modal */}

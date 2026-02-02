@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
+import logo from '/pyngyn_logo_wo_name.png';
 
 const Header = ({ onMenuToggle, onSidebarToggle, isSidebarOpen = false, isSidebarCompressed = false }) => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
@@ -75,7 +76,7 @@ const Header = ({ onMenuToggle, onSidebarToggle, isSidebarOpen = false, isSideba
             {/* Logo - Always visible */}
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8  rounded-lg flex items-center justify-center">
-                <img src="src/assets/pyngyn_logo_wo_name.png" alt="P" />
+                <img src={logo} alt="P" />
               </div>
               <span className="text-lg font-semibold text-foreground">PYNGYN CRM</span>
             </div>
