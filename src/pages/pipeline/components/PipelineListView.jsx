@@ -4,9 +4,10 @@ import Button from '../../../components/ui/Button';
 
 const PipelineListView = ({
     deals,
+    stages,
     onEditDeal,
     onDeleteDeal,
-    onCloneDeal
+    onStageChange
 }) => {
     const [hoveredRow, setHoveredRow] = useState(null);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -32,7 +33,13 @@ const PipelineListView = ({
         }).format(parsed);
     };
 
-    const getStageColor = (stage) => {
+    const getStageName = (stageId) => {
+        const stage = stages?.find(s => s.id === stageId);
+        return stage?.name || stageId;
+    };
+
+    const getStageColor = (stageId) => {
+        const stageName = getStageName(stageId)?.toLowerCase();
         const colors = {
             'new': 'bg-blue-100 text-blue-800 border-blue-200',
             'qualified': 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -40,7 +47,7 @@ const PipelineListView = ({
             'won': 'bg-green-100 text-green-800 border-green-200',
             'lost': 'bg-red-100 text-red-800 border-red-200'
         };
-        return colors?.[stage] || 'bg-gray-100 text-gray-800 border-gray-200';
+        return colors?.[stageName] || 'bg-gray-100 text-gray-800 border-gray-200';
     };
 
     const getPriorityColor = (priority) => {
@@ -52,12 +59,7 @@ const PipelineListView = ({
         return colors?.[priority] || 'bg-gray-100 text-gray-800 border-gray-200';
     };
 
-    const getProbabilityColor = (probability) => {
-        if (probability >= 80) return 'text-green-600';
-        if (probability >= 60) return 'text-yellow-600';
-        if (probability >= 40) return 'text-orange-600';
-        return 'text-red-600';
-    };
+
 
     const getCloseDateStatus = (closeDate) => {
         const today = new Date();
@@ -102,10 +104,6 @@ const PipelineListView = ({
                     aValue = a?.accountName?.toLowerCase() || '';
                     bValue = b?.accountName?.toLowerCase() || '';
                     break;
-                case 'value':
-                    aValue = a?.value || 0;
-                    bValue = b?.value || 0;
-                    break;
                 case 'owner':
                     aValue = a?.owner?.name?.toLowerCase() || '';
                     bValue = b?.owner?.name?.toLowerCase() || '';
@@ -123,10 +121,6 @@ const PipelineListView = ({
                     aValue = priorityOrder[a?.priority] || 0;
                     bValue = priorityOrder[b?.priority] || 0;
                     break;
-                case 'probability':
-                    aValue = a?.probability || 0;
-                    bValue = b?.probability || 0;
-                    break;
                 default:
                     return 0;
             }
@@ -141,9 +135,8 @@ const PipelineListView = ({
 
     const handleAction = (e, action, deal) => {
         e.stopPropagation();
-        if (action === 'edit') onEditDeal(deal);
+        if (action === 'view') onEditDeal(deal);
         if (action === 'delete') onDeleteDeal(deal?.id);
-        if (action === 'clone') onCloneDeal(deal);
     };
 
     return (
@@ -154,40 +147,13 @@ const PipelineListView = ({
                     <thead className="bg-muted/50 border-b border-border">
                         <tr>
                             <th className="text-left px-4 py-3">
-                                <button
-                                    onClick={() => handleSort('title')}
-                                    className="flex items-center space-x-2 text-sm font-medium text-foreground hover:text-primary transition-smooth"
-                                >
-                                    <span>Deal Title</span>
-                                    {getSortIcon('title')}
-                                </button>
+                                <span>Deal Title</span>
                             </th>
                             <th className="text-left px-4 py-3">
-                                <button
-                                    onClick={() => handleSort('accountName')}
-                                    className="flex items-center space-x-2 text-sm font-medium text-foreground hover:text-primary transition-smooth"
-                                >
-                                    <span>Account</span>
-                                    {getSortIcon('accountName')}
-                                </button>
+                                <span>Account</span>
                             </th>
                             <th className="text-left px-4 py-3">
-                                <button
-                                    onClick={() => handleSort('value')}
-                                    className="flex items-center space-x-2 text-sm font-medium text-foreground hover:text-primary transition-smooth"
-                                >
-                                    <span>Value</span>
-                                    {getSortIcon('value')}
-                                </button>
-                            </th>
-                            <th className="text-left px-4 py-3">
-                                <button
-                                    onClick={() => handleSort('owner')}
-                                    className="flex items-center space-x-2 text-sm font-medium text-foreground hover:text-primary transition-smooth"
-                                >
-                                    <span>Owner</span>
-                                    {getSortIcon('owner')}
-                                </button>
+                                <span>Owner</span>
                             </th>
                             <th className="text-left px-4 py-3">
                                 <button
@@ -214,15 +180,6 @@ const PipelineListView = ({
                                 >
                                     <span>Priority</span>
                                     {getSortIcon('priority')}
-                                </button>
-                            </th>
-                            <th className="text-left px-4 py-3">
-                                <button
-                                    onClick={() => handleSort('probability')}
-                                    className="flex items-center space-x-2 text-sm font-medium text-foreground hover:text-primary transition-smooth"
-                                >
-                                    <span>Probability</span>
-                                    {getSortIcon('probability')}
                                 </button>
                             </th>
                             <th className="w-28 px-4 py-3">
@@ -260,9 +217,6 @@ const PipelineListView = ({
                                             <div className="text-foreground">{deal?.accountName}</div>
                                         </td>
                                         <td className="px-4 py-4">
-                                            <div className="font-semibold text-foreground">{formatCurrency(deal?.value)}</div>
-                                        </td>
-                                        <td className="px-4 py-4">
                                             <div className="flex items-center space-x-2">
                                                 <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                                                     <span className="text-xs font-medium text-primary-foreground">
@@ -273,9 +227,18 @@ const PipelineListView = ({
                                             </div>
                                         </td>
                                         <td className="px-4 py-4">
-                                            <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full border ${getStageColor(deal?.stage)}`}>
-                                                {deal?.stage?.charAt(0).toUpperCase() + deal?.stage?.slice(1)}
-                                            </span>
+                                            <select
+                                                value={deal?.stage}
+                                                onChange={(e) => onStageChange?.(deal?.id, e.target.value)}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full border cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary ${getStageColor(deal?.stage)}`}
+                                            >
+                                                {stages?.map((stage) => (
+                                                    <option key={stage.id} value={stage.id}>
+                                                        {stage.name}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </td>
                                         <td className="px-4 py-4">
                                             <div className={`text-sm font-medium ${closeDateStatus?.color}`}>
@@ -294,30 +257,18 @@ const PipelineListView = ({
                                             </span>
                                         </td>
                                         <td className="px-4 py-4">
-                                            <div className={`text-sm font-semibold ${getProbabilityColor(deal?.probability)}`}>
-                                                {deal?.probability}%
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-4">
-                                            <div className={`flex items-center space-x-1 transition-opacity ${hoveredRow === deal?.id ? 'opacity-100' : 'opacity-0'}`}>
+                                            <div className={`flex items-center space-x-1 transition-opacity `}>
                                                 <Button
                                                     variant="ghost"
-                                                    size="icon"
-                                                    onClick={(e) => handleAction(e, 'edit', deal)}
-                                                    className="h-8 w-8"
-                                                    aria-label="Edit deal"
+                                                    size="sm"
+                                                    onClick={(e) => handleAction(e, 'view', deal)}
+                                                    className="h-8 px-3"
+                                                    aria-label="View deal details"
                                                 >
-                                                    <Icon name="Edit2" size={14} />
+                                                    <Icon name="Eye" size={14} className="mr-1" />
+                                                    <span className="text-xs">View</span>
                                                 </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={(e) => handleAction(e, 'clone', deal)}
-                                                    className="h-8 w-8"
-                                                    aria-label="Clone deal"
-                                                >
-                                                    <Icon name="Copy" size={14} />
-                                                </Button>
+
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
@@ -360,20 +311,22 @@ const PipelineListView = ({
                                         <h3 className="font-semibold text-foreground text-sm">{deal?.title}</h3>
                                         <p className="text-xs text-muted-foreground mt-0.5">{deal?.accountName}</p>
                                     </div>
-                                    <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full border ${getStageColor(deal?.stage)}`}>
-                                        {deal?.stage?.charAt(0).toUpperCase() + deal?.stage?.slice(1)}
-                                    </span>
+                                    <select
+                                        value={deal?.stage}
+                                        onChange={(e) => onStageChange?.(deal?.id, e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full border cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary ${getStageColor(deal?.stage)}`}
+                                    >
+                                        {stages?.map((stage) => (
+                                            <option key={stage.id} value={stage.id}>
+                                                {stage.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 mb-3">
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Value</p>
-                                        <p className="font-semibold text-foreground text-sm">{formatCurrency(deal?.value)}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Probability</p>
-                                        <p className={`font-semibold text-sm ${getProbabilityColor(deal?.probability)}`}>{deal?.probability}%</p>
-                                    </div>
+
                                     <div>
                                         <p className="text-xs text-muted-foreground">Owner</p>
                                         <p className="text-xs text-foreground">{deal?.owner?.name}</p>
@@ -396,18 +349,10 @@ const PipelineListView = ({
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={(e) => handleAction(e, 'edit', deal)}
+                                        onClick={(e) => handleAction(e, 'view', deal)}
                                     >
-                                        <Icon name="Edit2" size={14} className="mr-1" />
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={(e) => handleAction(e, 'clone', deal)}
-                                    >
-                                        <Icon name="Copy" size={14} className="mr-1" />
-                                        Clone
+                                        <Icon name="Eye" size={14} className="mr-1" />
+                                        View Details
                                     </Button>
                                 </div>
                             </div>

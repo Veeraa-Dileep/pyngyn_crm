@@ -9,6 +9,7 @@ import PipelineFilters from './components/PipelineFilters';
 import AddDealModal from './components/AddDealModal';
 import PipelineStats from './components/PipelineStats';
 import PipelineListView from './components/PipelineListView';
+import LeadDetailView from './components/LeadDetailView';
 import { usePipelines } from '../../contexts/PipelineContext';
 import { useDeals } from '../../contexts/DealsContext';
 
@@ -33,6 +34,11 @@ const Pipeline = () => {
     startDate: '',
     endDate: ''
   });
+  const [selectedDeal, setSelectedDeal] = useState(null);
+  const [isDetailViewOpen, setIsDetailViewOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
+  const [teamMembers, setTeamMembers] = useState([]);
 
   // Load pipeline data when pipelineId changes
   useEffect(() => {
@@ -83,8 +89,8 @@ const Pipeline = () => {
   };
 
   const handleEditDeal = (deal) => {
-    console.log('Edit deal:', deal);
-    // Implement edit functionality
+    setSelectedDeal(deal);
+    setIsDetailViewOpen(true);
   };
 
   const handleDeleteDeal = (dealId) => {
@@ -95,13 +101,18 @@ const Pipeline = () => {
     }
   };
 
-  const handleCloneDeal = (deal) => {
-    const clonedDeal = {
-      ...deal,
-      title: `${deal?.title} (Copy)`,
-    };
+
+
+
+  const showToast = (message, type = 'success') => {
+    setToastMessage(message);
+    setToastType(type);
+    setTimeout(() => setToastMessage(''), 3000);
+  };
+
+  const handleSaveDealDetails = async (updatedDeal) => {
     if (currentPipeline) {
-      addDeal(currentPipeline.id, clonedDeal);
+      await updateDeal(currentPipeline.id, updatedDeal.id, updatedDeal);
     }
   };
 
@@ -239,15 +250,6 @@ const Pipeline = () => {
               </div>
             </div>
 
-            {/* Pipeline Stats */}
-            <PipelineStats deals={filteredDeals} />
-
-            {/* Filters */}
-            <PipelineFilters
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              onResetFilters={handleResetFilters} />
-
 
 
             {/* Pipeline Board / List View */}
@@ -260,7 +262,7 @@ const Pipeline = () => {
                       {viewMode === 'board' ? 'Pipeline Board' : 'Pipeline List'}
                     </h2>
                     <p className="text-base font-medium text-foreground">
-                      {filteredDeals?.length} deal{filteredDeals?.length !== 1 ? 's' : ''}
+                      {filteredDeals?.length} lead{filteredDeals?.length !== 1 ? 's' : ''}
                     </p>
                   </div>
                 </div>
@@ -314,8 +316,7 @@ const Pipeline = () => {
                             onDealMove={handleDealMove}
                             onAddDeal={handleAddDeal}
                             onEditDeal={handleEditDeal}
-                            onDeleteDeal={handleDeleteDeal}
-                            onCloneDeal={handleCloneDeal} />
+                            onDeleteDeal={handleDeleteDeal} />
 
                         </motion.div>
                       )}
@@ -325,9 +326,10 @@ const Pipeline = () => {
               ) : (
                 <PipelineListView
                   deals={filteredDeals}
+                  stages={pipelineStages}
                   onEditDeal={handleEditDeal}
                   onDeleteDeal={handleDeleteDeal}
-                  onCloneDeal={handleCloneDeal}
+                  onStageChange={handleDealMove}
                 />
               )}
             </div>
@@ -378,6 +380,26 @@ const Pipeline = () => {
           onClose={() => setIsAddDealModalOpen(false)}
           onSave={handleSaveDeal}
           initialStage={selectedStage} />
+
+        {/* Lead Detail View */}
+        <LeadDetailView
+          deal={selectedDeal}
+          isOpen={isDetailViewOpen}
+          onClose={() => setIsDetailViewOpen(false)}
+          onSave={handleSaveDealDetails}
+          teamMembers={teamMembers}
+          showToast={showToast}
+        />
+
+        {/* Toast Notification */}
+        {toastMessage && (
+          <div
+            className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-elevation-3 z-50 ${toastType === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+              }`}
+          >
+            {toastMessage}
+          </div>
+        )}
       </AppLayout>
     </div>
   );

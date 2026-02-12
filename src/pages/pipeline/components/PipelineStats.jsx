@@ -99,21 +99,13 @@ const PipelineStats = ({ deals }) => {
           transition={{ delay: index * 0.1 }}
           className={`${stat?.bgColor} border border-border rounded-xl p-5 hover:shadow-elevation-2 transition-all duration-200 cursor-default`}
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className={`w-12 h-12 ${stat?.color} rounded-xl flex items-center justify-center shadow-sm`}>
+          <div className=" items-center mb-4">
+            <div className={`w-auto h-12 ${stat?.color} rounded-xl flex items-center justify-center shadow-sm`}>
               <Icon name={stat?.icon} size={22} />
-            </div>
-            <div className={`flex items-center space-x-1 text-xs font-semibold px-2 py-1 rounded-full ${stat?.changeType === 'positive' ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
-              }`}>
-              <Icon
-                name={stat?.changeType === 'positive' ? 'TrendingUp' : 'TrendingDown'}
-                size={12}
-              />
-              <span>{stat?.change}</span>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="flex flex-col items-center space-y-2">
             <div className="text-2xl font-bold text-foreground tracking-tight">
               {stat?.value}
             </div>

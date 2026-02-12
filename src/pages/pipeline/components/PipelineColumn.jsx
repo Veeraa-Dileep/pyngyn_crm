@@ -10,8 +10,7 @@ const PipelineColumn = ({
   onDealMove,
   onAddDeal,
   onEditDeal,
-  onDeleteDeal,
-  onCloneDeal
+  onDeleteDeal
 }) => {
   const getStageColor = (stageName) => {
     const colors = {
@@ -114,7 +113,6 @@ const PipelineColumn = ({
                 deal={deal}
                 onEdit={() => onEditDeal(deal)}
                 onDelete={() => onDeleteDeal(deal?.id)}
-                onClone={() => onCloneDeal(deal)}
               />
             </motion.div>
           ))

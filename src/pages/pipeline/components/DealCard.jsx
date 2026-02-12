@@ -4,7 +4,7 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Image from '../../../components/AppImage';
 
-const DealCard = ({ deal, onEdit, onDelete, onClone }) => {
+const DealCard = ({ deal, onEdit, onDelete }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -33,6 +33,36 @@ const DealCard = ({ deal, onEdit, onDelete, onClone }) => {
     };
     return colors?.[priority] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
+
+  const getAssigneeColor = (name) => {
+    if (!name) return '#9CA3AF'; // gray-400 for unassigned
+
+    // Define a color palette
+    const colors = [
+      '#4F46E5', // indigo
+      '#7C3AED', // purple
+      '#DB2777', // pink
+      '#DC2626', // red
+      '#EA580C', // orange
+      '#D97706', // amber
+      '#CA8A04', // yellow
+      '#65A30D', // lime
+      '#16A34A', // green
+      '#059669', // emerald
+      '#0891B2', // cyan
+      '#0284C7', // sky
+      '#2563EB', // blue
+      '#8B5CF6', // violet
+    ];
+
+    // Generate a consistent color based on the name
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
 
   const getCloseDateStatus = (closeDate) => {
     const today = new Date();
@@ -81,43 +111,49 @@ const DealCard = ({ deal, onEdit, onDelete, onClone }) => {
         >
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={onEdit}
-            className="h-6 w-6"
-            aria-label="Edit deal"
+            className="h-7 px-3 text-xs"
+            aria-label="View deal details"
           >
-            <Icon name="Edit2" size={12} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClone}
-            className="h-6 w-6"
-            aria-label="Clone deal"
-          >
-            <Icon name="Copy" size={12} />
+            <Icon name="Eye" size={14} className="mr-1.5" />
+            View Details
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={onDelete}
-            className="h-6 w-6 text-destructive hover:text-destructive"
+            className="h-7 w-7 text-destructive hover:text-destructive"
             aria-label="Delete deal"
           >
-            <Icon name="Trash2" size={12} />
+            <Icon name="Trash2" size={14} />
           </Button>
         </motion.div>
       )}
       {/* Deal Header */}
       <div className="space-y-2.5">
+        {/* Opportunity Title */}
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm text-card-foreground truncate pr-8 leading-tight">
-              {deal?.title}
+            <h3 className="font-semibold text-sm text-primary truncate pr-8 leading-tight">
+              {(deal?.name || deal?.company || deal?.title || 'Untitled')}'s Opportunity
             </h3>
-            <p className="text-xs text-muted-foreground truncate mt-0.5">
-              {deal?.accountName}
-            </p>
+          </div>
+        </div>
+
+        {/* Contact and Company Details */}
+        <div className="space-y-1">
+          <div className="flex items-center space-x-1.5">
+            <Icon name="User" size={14} className="text-muted-foreground shrink-0" />
+            <span className="text-xs font-medium text-foreground truncate">
+              {deal?.name || '-'}
+            </span>
+          </div>
+          <div className="flex items-center space-x-1.5">
+            <Icon name="Building2" size={14} className="text-muted-foreground shrink-0" />
+            <span className="text-xs text-muted-foreground truncate">
+              {deal?.company || '-'}
+            </span>
           </div>
         </div>
 
@@ -125,6 +161,13 @@ const DealCard = ({ deal, onEdit, onDelete, onClone }) => {
         <div className="space-y-2">
           {/* Owner */}
           <div className="flex items-center space-x-2">
+            {/* Avatar Circle */}
+            <div
+              className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+              style={{ backgroundColor: getAssigneeColor(deal?.owner?.name) }}
+            >
+              {deal?.owner?.name?.charAt(0)?.toUpperCase() || 'U'}
+            </div>
             <span className="text-xs font-medium text-foreground truncate">
               {deal?.owner?.name}
             </span>
@@ -156,7 +199,7 @@ const DealCard = ({ deal, onEdit, onDelete, onClone }) => {
           </div>
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar 
         <div className="space-y-2">
           <div className="flex justify-between text-xs font-medium text-foreground">
             <span>Progress</span>
@@ -170,7 +213,7 @@ const DealCard = ({ deal, onEdit, onDelete, onClone }) => {
           </div>
         </div>
 
-        {/* 
+        
         {deal?.tags && deal?.tags?.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {deal?.tags?.slice(0, 2)?.map((tag, index) => (

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import Icon from '../../../components/AppIcon';
-import Button from '../../../components/ui/Button';
+import Icon from '../components/AppIcon';
+import Button from '../components/ui/Button';
 
 const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelete }) => {
     const [selectedLeads, setSelectedLeads] = useState([]);

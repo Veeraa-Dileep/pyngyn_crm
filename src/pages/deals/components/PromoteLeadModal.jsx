@@ -14,6 +14,8 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
     const [newPipelineDescription, setNewPipelineDescription] = useState('');
     const [selectedStage, setSelectedStage] = useState('');
     const [assignedTo, setAssignedTo] = useState('');
+    const [closeDate, setCloseDate] = useState('');
+    const [priority, setPriority] = useState('Medium');
 
     useEffect(() => {
         if (isOpen && pipelines.length > 0) {
@@ -24,6 +26,11 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
             setNewPipelineDescription('');
             setSelectedStage('new');
             setAssignedTo('');
+            // Set default close date to 30 days from now
+            const defaultCloseDate = new Date();
+            defaultCloseDate.setDate(defaultCloseDate.getDate() + 30);
+            setCloseDate(defaultCloseDate.toISOString().split('T')[0]);
+            setPriority('Medium');
         }
     }, [isOpen, pipelines]);
 
@@ -72,6 +79,8 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
                 pipelineName: createdPipeline.name,
                 stage: 'new',
                 assignedTo,
+                closeDate,
+                priority,
                 newPipeline: createdPipeline
             });
         } else {
@@ -85,7 +94,9 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
                 pipelineId: selectedPipelineId,
                 pipelineName: selectedPipeline?.name,
                 stage: selectedStage,
-                assignedTo
+                assignedTo,
+                closeDate,
+                priority
             });
         }
 
@@ -205,6 +216,35 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
                                     {member.name}
                                 </option>
                             ))}
+                        </select>
+                    </div>
+
+                    {/* Close Date */}
+                    <div>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">
+                            Expected Close Date
+                        </label>
+                        <input
+                            type="date"
+                            value={closeDate}
+                            onChange={(e) => setCloseDate(e.target.value)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        />
+                    </div>
+
+                    {/* Priority */}
+                    <div>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">
+                            Priority
+                        </label>
+                        <select
+                            value={priority}
+                            onChange={(e) => setPriority(e.target.value)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        >
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
                         </select>
                     </div>
 

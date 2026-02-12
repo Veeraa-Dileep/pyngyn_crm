@@ -4,11 +4,10 @@ import AppLayout from "../../components/AppLayout";
 import Icon from "../../components/AppIcon";
 import Button from "../../components/ui/Button";
 import DealsTable from "./components/DealsTable";
-import DealsFilters from "./components/DealsFilters";
-import DealDrawer from "./components/DealDrawer";
+import LeadDrawer from "./components/LeadDrawer";
 import TablePagination from "./components/TablePagination";
 import PromoteLeadModal from "./components/PromoteLeadModal";
-import RecycleBin from "./components/RecycleBin";
+import { useMembers } from '../../contexts/MembersContext';
 import AddMemberModal from "../../components/AddMemberModal";
 import ImportLeadsModal from "./components/ImportLeadsModal";
 
@@ -35,12 +34,8 @@ const DEFAULT_PIPELINE_ID = "default-pipeline";
 const DealsPage = () => {
   const { pipelines } = usePipelines();
   const { addDeal } = useDeals();
+  const { members, addMember } = useMembers();
   const [leads, setLeads] = useState([]);
-  const [deletedLeads, setDeletedLeads] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([
-    { id: '1', name: 'Dileep', email: 'dileep@example.com', role: 'Sales Manager' },
-    { id: '2', name: 'Shankar', email: 'shankar@example.com', role: 'Sales Rep' }
-  ]);
 
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -55,9 +50,9 @@ const DealsPage = () => {
   // Modal states
   const [promoteLead, setPromoteLead] = useState(null);
   const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
-  const [isRecycleBinOpen, setIsRecycleBinOpen] = useState(false);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
 
   // Toast notifications
   const { showToast, ToastContainer } = useToast();
@@ -121,13 +116,22 @@ const DealsPage = () => {
   }, []);
 
   /* ---------------- DELETE (SOFT) ---------------- */
-  const handleDeleteLead = async (leadId) => {
+  const handleDeleteLead = (leadId) => {
+    // Show confirmation popup
+    const lead = leads.find(l => l.id === leadId);
+    setDeleteConfirmation(lead);
+  };
+
+  const confirmDeleteLead = async () => {
+    if (!deleteConfirmation) return;
+
     try {
-      await updateDoc(doc(db, "leads", leadId), {
+      await updateDoc(doc(db, "leads", deleteConfirmation.id), {
         status: "deleted",
         updatedAt: serverTimestamp(),
       });
       showToast("Lead moved to recycle bin", "success");
+      setDeleteConfirmation(null);
     } catch (error) {
       console.error("Error deleting lead:", error);
       showToast("Failed to delete lead", "error");
@@ -162,7 +166,9 @@ const DealsPage = () => {
   /* ---------------- PROMOTE ---------------- */
   const handlePromoteLead = async (promotionData) => {
     try {
-      const { leadId, pipelineId, stage, assignedTo, pipelineName } = promotionData;
+      const { leadId, pipelineId, stage, assignedTo, pipelineName, closeDate, priority } = promotionData;
+      console.log('Promotion Data:', { leadId, pipelineId, stage, assignedTo, closeDate, priority });
+      console.log('Team Members:', members);
       const lead = leads.find(l => l.id === leadId);
 
       if (!lead) {
@@ -182,16 +188,18 @@ const DealsPage = () => {
       // Create a deal from the lead using DealsContext
       const newDeal = {
         title: lead.name || lead.company || 'Untitled Deal',
+        name: lead.name || '',  // Preserve contact name
+        company: lead.company || '',  // Preserve company name
         accountName: lead.company || lead.name || 'Unknown',
         value: lead.value || 0,
         owner: {
           id: assignedTo || 'unassigned',
-          name: teamMembers.find(m => m.id === assignedTo)?.name || 'Unassigned',
+          name: members.find(m => m.id === assignedTo)?.name || 'Unassigned',
           avatar: '',
           avatarAlt: ''
         },
-        closeDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
-        priority: 'Medium',
+        closeDate: closeDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        priority: priority || 'Medium',
         probability: 50,
         stage: stage,
         tags: [lead.source || 'Lead'],
@@ -211,9 +219,14 @@ const DealsPage = () => {
   };
 
   /* ---------------- TEAM MEMBER MANAGEMENT ---------------- */
-  const handleAddMember = (member) => {
-    setTeamMembers([...teamMembers, member]);
-    showToast(`${member.name} added to team`, "success");
+  const handleAddMember = async (member) => {
+    try {
+      await addMember(member);
+      showToast(`${member.name} added to team`, "success");
+    } catch (error) {
+      console.error('Error adding member:', error);
+      showToast('Failed to add member', 'error');
+    }
   };
 
   /* ---------------- IMPORT LEADS ---------------- */
@@ -294,7 +307,6 @@ const DealsPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <AppLayout
-        onRecycleBinOpen={() => setIsRecycleBinOpen(true)}
         onAddMemberOpen={() => setIsAddMemberOpen(true)}
       >
         <Helmet>
@@ -322,15 +334,6 @@ const DealsPage = () => {
                 </Button>
               </div>
             </div>
-
-            {/* FILTERS (UNCHANGED) */}
-            <DealsFilters
-              filters={{}}
-              onFiltersChange={() => { }}
-              onClearFilters={() => { }}
-              dealCount={filteredAndSortedDeals.length}
-              selectedCount={selectedDeals.length}
-            />
 
             {/* TABLE (UNCHANGED STRUCTURE) */}
             <DealsTable
@@ -362,11 +365,13 @@ const DealsPage = () => {
           </div>
         </main>
 
-        {/* DRAWER (UNCHANGED) */}
-        <DealDrawer
-          deal={selectedDeal}
+        {/* LEAD DRAWER */}
+        <LeadDrawer
+          lead={selectedDeal}
           isOpen={isDrawerOpen}
           onClose={() => setIsDrawerOpen(false)}
+          teamMembers={members}
+          showToast={showToast}
         />
 
         {/* PROMOTE MODAL */}
@@ -377,21 +382,12 @@ const DealsPage = () => {
           lead={promoteLead}
         />
 
-        {/* RECYCLE BIN MODAL */}
-        <RecycleBin
-          isOpen={isRecycleBinOpen}
-          onClose={() => setIsRecycleBinOpen(false)}
-          deletedLeads={deletedLeads}
-          onRestore={handleRestoreLead}
-          onPermanentDelete={handlePermanentDelete}
-        />
-
         {/* ADD MEMBER MODAL */}
         <AddMemberModal
           isOpen={isAddMemberOpen}
           onClose={() => setIsAddMemberOpen(false)}
           onAddMember={handleAddMember}
-          members={teamMembers}
+          members={members}
         />
 
         {/* IMPORT LEADS MODAL */}
@@ -408,6 +404,49 @@ const DealsPage = () => {
           onClose={() => setIsAddLeadOpen(false)}
           onSuccess={handleCreateLead}
         />
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmation && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-background rounded-xl shadow-elevation-3 w-full max-w-md p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-12 h-12 bg-error/10 rounded-full flex items-center justify-center">
+                  <Icon name="Trash2" size={24} className="text-error" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Move to Recycle Bin?</h3>
+                  <p className="text-sm text-muted-foreground">This lead will be moved to the recycle bin</p>
+                </div>
+              </div>
+
+              <div className="bg-muted/30 rounded-lg p-4 mb-6">
+                <p className="text-sm font-medium text-foreground">
+                  {deleteConfirmation.title || deleteConfirmation.name || deleteConfirmation.company}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {deleteConfirmation.email}
+                </p>
+              </div>
+
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteConfirmation(null)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={confirmDeleteLead}
+                  className="flex-1"
+                >
+                  Move to Recycle Bin
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Toast Notifications */}
         <ToastContainer />

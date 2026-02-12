@@ -80,7 +80,7 @@ const PipelineCard = ({ pipeline, onClick, onEdit, onDelete }) => {
                     </div>
                 </div>
             </div>
-            {/* Stats */}
+            {/* Stats 
             <div className="grid grid-cols-3 gap-3 mb-4">
                 <div>
                     <p className="text-xs text-muted-foreground mb-0.5">Stages</p>
@@ -88,7 +88,7 @@ const PipelineCard = ({ pipeline, onClick, onEdit, onDelete }) => {
                 </div>
                 <div>
                     <p className="text-xs text-muted-foreground mb-0.5">Deals</p>
-                    <p className="text-sm font-semibold text-foreground">{pipeline.dealCount}</p>
+                    <p className="text-sm font-semibold text-foreground">{pipeline.dealCount - 1}</p>
                 </div>
                 <div>
                     <p className="text-xs text-muted-foreground mb-0.5">Value</p>
@@ -96,9 +96,9 @@ const PipelineCard = ({ pipeline, onClick, onEdit, onDelete }) => {
                         {formatCurrency(pipeline.totalValue)}
                     </p>
                 </div>
-            </div>
+            </div>*/}
 
-            {/* Stages Preview */}
+            {/* Stages Preview
             <div className="mb-3">
                 <p className="text-xs text-muted-foreground mb-2">Stages</p>
                 <div className="flex flex-wrap gap-1.5">
@@ -122,7 +122,7 @@ const PipelineCard = ({ pipeline, onClick, onEdit, onDelete }) => {
                         </span>
                     )}
                 </div>
-            </div>
+            </div> */}
 
             {/* Footer */}
             <div className="pt-3 border-t border-border flex items-center justify-between">

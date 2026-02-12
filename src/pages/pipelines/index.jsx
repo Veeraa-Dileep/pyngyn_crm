@@ -84,6 +84,8 @@ const Pipelines = () => {
                             </Button>
                         </div>
 
+
+
                         {/* Pipelines Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {pipelines.length === 0 ? (
@@ -124,12 +126,11 @@ const Pipelines = () => {
                                 ))
                             )}
                         </div>
-
-                        {/* Stats Summary */}
+                        {/* Stats Summary 
                         {pipelines.length > 0 && (
                             <div className="bg-card border border-border rounded-xl p-6">
                                 <h3 className="text-lg font-semibold text-foreground mb-4">Summary</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                     <div className="bg-muted/30 rounded-lg p-4">
                                         <p className="text-sm text-muted-foreground mb-1">Total Pipelines</p>
                                         <p className="text-2xl font-bold text-foreground">{pipelines.length}</p>
@@ -140,20 +141,23 @@ const Pipelines = () => {
                                             {pipelines.reduce((sum, p) => sum + p.dealCount, 0)}
                                         </p>
                                     </div>
-                                    <div className="bg-muted/30 rounded-lg p-4">
+                                    
+                                      <div className="bg-muted/30 rounded-lg p-4">
                                         <p className="text-sm text-muted-foreground mb-1">Total Value</p>
                                         <p className="text-2xl font-bold text-primary">
                                             {new Intl.NumberFormat('en-US', {
                                                 style: 'currency',
-                                                currency: 'USD',
+                                                currency: 'INR',
                                                 minimumFractionDigits: 0
                                             }).format(pipelines.reduce((sum, p) => sum + p.totalValue, 0))}
                                         </p>
                                     </div>
+                                     
                                 </div>
                             </div>
-                        )}
+                        )}*/}
                     </div>
+
                 </main>
 
                 {/* Create/Edit Pipeline Modal */}
