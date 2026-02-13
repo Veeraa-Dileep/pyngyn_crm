@@ -58,9 +58,10 @@ const PipelineColumn = ({
               {stage?.name}
             </span>
             <span className="text-xs font-medium text-foreground bg-muted px-2 py-0.5 rounded-full">
-              {deals?.length} deal{deals?.length !== 1 ? 's' : ''}
+              {deals?.length} lead{deals?.length !== 1 ? 's' : ''}
             </span>
           </div>
+          {/* 
           <Button
             variant="ghost"
             size="icon"
@@ -69,7 +70,7 @@ const PipelineColumn = ({
             aria-label={`Add deal to ${stage?.name}`}
           >
             <Icon name="Plus" size={14} />
-          </Button>
+          </Button>*/}
         </div>
 
         <div className="text-lg font-bold text-primary">
@@ -89,6 +90,7 @@ const PipelineColumn = ({
             </div>
             <p className="text-base font-medium text-foreground mb-2">No deals in {stage?.name}</p>
             <p className="text-sm text-muted-foreground mb-4">Get started by adding your first deal</p>
+            {/*
             <Button
               variant="outline"
               size="sm"
@@ -99,7 +101,7 @@ const PipelineColumn = ({
               className="font-medium"
             >
               Add Deal
-            </Button>
+            </Button>*/}
           </div>
         ) : (
           deals?.map((deal, index) => (

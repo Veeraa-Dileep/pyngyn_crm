@@ -230,7 +230,7 @@ const Pipeline = () => {
                   {currentPipeline?.description || 'Manage your deals through the sales process'}
                 </p>
               </div>
-
+              {/*
               <div className="flex items-center space-x-3">
                 <Button
                   variant="outline"
@@ -249,7 +249,7 @@ const Pipeline = () => {
 
                   Add Deal
                 </Button>
-              </div>
+              </div>*/}
             </div>
 
 
