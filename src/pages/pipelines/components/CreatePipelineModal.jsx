@@ -103,6 +103,10 @@ const CreatePipelineModal = ({ isOpen, onClose, onSave, pipeline }) => {
             }
         });
 
+        if (!formData.description.trim()) {
+            newErrors.description = 'Description is required';
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -165,18 +169,23 @@ const CreatePipelineModal = ({ isOpen, onClose, onSave, pipeline }) => {
                     {/* Description */}
                     <div>
                         <label className="block text-sm font-medium text-foreground mb-1.5">
-                            Description
+                            Description <span className="text-destructive">*</span>
                         </label>
                         <textarea
                             value={formData.description}
                             onChange={(e) => handleChange('description', e.target.value)}
                             placeholder="Brief description of this pipeline's purpose"
                             rows={3}
-                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                            className={`w-full px-3 py-2 bg-background border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none ${errors.description ? 'border-destructive' : 'border-border'
+                                }`}
+                            required
                         />
+                        {errors.description && (
+                            <p className="mt-1.5 text-sm text-destructive">{errors.description}</p>
+                        )}
                     </div>
 
-                    {/* Stages */}
+                    {/* Stages 
                     <div>
                         <div className="flex items-center justify-between mb-3">
                             <label className="block text-sm font-medium text-foreground">
@@ -247,7 +256,7 @@ const CreatePipelineModal = ({ isOpen, onClose, onSave, pipeline }) => {
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </div>*/}
                 </form>
 
                 {/* Footer */}

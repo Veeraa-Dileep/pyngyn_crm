@@ -6,6 +6,7 @@ import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import PipelineCard from './components/PipelineCard';
 import CreatePipelineModal from './components/CreatePipelineModal';
+import DeletePipelineModal from './components/DeletePipelineModal';
 import { usePipelines } from '../../contexts/PipelineContext';
 
 const Pipelines = () => {
@@ -13,6 +14,7 @@ const Pipelines = () => {
     const { pipelines, addPipeline, updatePipeline, deletePipeline } = usePipelines();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingPipeline, setEditingPipeline] = useState(null);
+    const [deletingPipeline, setDeletingPipeline] = useState(null);
 
     const handleCreatePipeline = async (newPipeline) => {
         try {
@@ -40,9 +42,14 @@ const Pipelines = () => {
         }
     };
 
-    const handleDeletePipeline = (pipelineId) => {
-        if (window.confirm('Are you sure you want to delete this pipeline? All associated deals will be lost.')) {
-            deletePipeline(pipelineId);
+    const handleDeletePipeline = (pipeline) => {
+        setDeletingPipeline(pipeline);
+    };
+
+    const confirmDeletePipeline = () => {
+        if (deletingPipeline) {
+            deletePipeline(deletingPipeline.id);
+            setDeletingPipeline(null);
         }
     };
 
@@ -120,7 +127,7 @@ const Pipelines = () => {
                                             pipeline={pipeline}
                                             onClick={() => handlePipelineClick(pipeline.id)}
                                             onEdit={() => handleEditPipeline(pipeline)}
-                                            onDelete={() => handleDeletePipeline(pipeline.id)}
+                                            onDelete={() => handleDeletePipeline(pipeline)}
                                         />
                                     </motion.div>
                                 ))
@@ -166,6 +173,14 @@ const Pipelines = () => {
                     onClose={handleCloseModal}
                     onSave={editingPipeline ? handleUpdatePipeline : handleCreatePipeline}
                     pipeline={editingPipeline}
+                />
+
+                {/* Delete Pipeline Modal */}
+                <DeletePipelineModal
+                    isOpen={!!deletingPipeline}
+                    onClose={() => setDeletingPipeline(null)}
+                    onConfirm={confirmDeletePipeline}
+                    pipelineName={deletingPipeline?.name}
                 />
             </AppLayout>
         </div>

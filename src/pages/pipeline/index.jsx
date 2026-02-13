@@ -12,6 +12,8 @@ import PipelineListView from './components/PipelineListView';
 import LeadDetailView from './components/LeadDetailView';
 import { usePipelines } from '../../contexts/PipelineContext';
 import { useDeals } from '../../contexts/DealsContext';
+import DeleteDealModal from './components/DeleteDealModal';
+import { useToast } from '../../components/ui/Toast';
 
 const Pipeline = () => {
   const { pipelineId } = useParams();
@@ -36,9 +38,8 @@ const Pipeline = () => {
   });
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [isDetailViewOpen, setIsDetailViewOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastType, setToastType] = useState('success');
   const [teamMembers, setTeamMembers] = useState([]);
+  const { showToast, ToastContainer } = useToast();
 
   // Load pipeline data when pipelineId changes
   useEffect(() => {
@@ -93,22 +94,23 @@ const Pipeline = () => {
     setIsDetailViewOpen(true);
   };
 
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+
   const handleDeleteDeal = (dealId) => {
-    if (window.confirm('Are you sure you want to delete this deal?')) {
-      if (currentPipeline) {
-        deleteDeal(currentPipeline.id, dealId);
-      }
+    // Find the deal object
+    const deal = filteredDeals.find(d => d.id === dealId);
+    setDeleteConfirmation(deal);
+  };
+
+  const confirmDeleteDeal = async () => {
+    if (deleteConfirmation && currentPipeline) {
+      await deleteDeal(currentPipeline.id, deleteConfirmation.id);
+      showToast('Lead moved to recycle bin', 'success');
+      setDeleteConfirmation(null);
     }
   };
 
 
-
-
-  const showToast = (message, type = 'success') => {
-    setToastMessage(message);
-    setToastType(type);
-    setTimeout(() => setToastMessage(''), 3000);
-  };
 
   const handleSaveDealDetails = async (updatedDeal) => {
     if (currentPipeline) {
@@ -329,7 +331,8 @@ const Pipeline = () => {
                   stages={pipelineStages}
                   onEditDeal={handleEditDeal}
                   onDeleteDeal={handleDeleteDeal}
-                  onStageChange={handleDealMove}
+                // STAGE EDITING DISABLED - Uncomment below to re-enable
+                // onStageChange={handleDealMove}
                 />
               )}
             </div>
@@ -391,15 +394,16 @@ const Pipeline = () => {
           showToast={showToast}
         />
 
+        {/* Delete Confirmation Modal */}
+        <DeleteDealModal
+          isOpen={!!deleteConfirmation}
+          onClose={() => setDeleteConfirmation(null)}
+          onConfirm={confirmDeleteDeal}
+          dealTitle={deleteConfirmation?.title}
+          dealEmail={deleteConfirmation?.email}
+        />
         {/* Toast Notification */}
-        {toastMessage && (
-          <div
-            className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-elevation-3 z-50 ${toastType === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-              }`}
-          >
-            {toastMessage}
-          </div>
-        )}
+        <ToastContainer />
       </AppLayout>
     </div>
   );

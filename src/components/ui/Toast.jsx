@@ -33,11 +33,11 @@ export const Toast = ({ message, type = "success", duration = 3000, onClose }) =
     <div
       className={`fixed bottom-6 right-6 z-10000 flex items-center space-x-3 px-4 py-3 rounded-lg border-2 shadow-elevation-2 backdrop-blur-sm animate-in slide-in-from-bottom-5 duration-300 ${styles[type]}`}
     >
-      <Icon name={icons[type]} size={20} />
-      <span className="text-sm font-medium">{message}</span>
+      <Icon name={icons[type]} className="text-black" size={20} />
+      <span className="text-black text-sm font-medium">{message}</span>
       <button
         onClick={onClose}
-        className="ml-2 hover:opacity-70 transition-opacity"
+        className="ml-2 hover:opacity-80 transition-opacity"
         aria-label="Close notification"
       >
         <Icon name="X" size={16} />

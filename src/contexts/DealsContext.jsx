@@ -80,11 +80,15 @@ export const DealsProvider = ({ children }) => {
             (snapshot) => {
                 const dealsByPipeline = {};
                 snapshot.docs.forEach(docSnapshot => {
+                    const data = docSnapshot.data();
+                    // Filter out deleted deals from the main view
+                    if (data.status === 'deleted') return;
+
                     const deal = {
                         id: docSnapshot.id,
-                        ...docSnapshot.data(),
-                        createdAt: docSnapshot.data().createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-                        updatedAt: docSnapshot.data().updatedAt?.toDate?.()?.toISOString() || new Date().toISOString()
+                        ...data,
+                        createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+                        updatedAt: data.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString()
                     };
                     const pipelineId = deal.pipelineId;
                     if (!dealsByPipeline[pipelineId]) {
@@ -106,6 +110,10 @@ export const DealsProvider = ({ children }) => {
 
     const updatePipelineStats = async (pipelineId) => {
         try {
+            // Stats should only count active (non-deleted) deals
+            // The dealsByPipeline state is already filtered, but we might need to be careful if calling this
+            // before state updates. For accuracy, we could query Firestore, but using state is faster/cheaper.
+            // Recalculating based on state:
             const deals = dealsByPipeline[pipelineId] || [];
             const dealCount = deals.length;
             const totalValue = deals.reduce((sum, deal) => sum + (deal.value || 0), 0);
@@ -125,6 +133,7 @@ export const DealsProvider = ({ children }) => {
             const docRef = await addDoc(collection(db, 'pipelines', pipelineId, 'deals'), {
                 ...newDeal,
                 pipelineId,
+                status: 'active', // Explicitly set status
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
             });
@@ -169,20 +178,26 @@ export const DealsProvider = ({ children }) => {
                 });
             } else {
                 // Move to different pipeline: delete from old, add to new
+                // NOTE: When moving, we're effectively creating a new doc in a new subcollection
+                // We need to get the old deal first.
+                // For simplicity assuming we have the deal data or fetch it.
+                // In a real app we'd fetch the doc first.
+                // Since our local state dealsByPipeline has the data:
                 const deals = dealsByPipeline[fromPipelineId] || [];
                 const deal = deals.find(d => d.id === dealId);
 
                 if (deal) {
                     // Add to new pipeline
+                    const { id, ...dealData } = deal;
                     await addDoc(collection(db, 'pipelines', toPipelineId, 'deals'), {
-                        ...deal,
+                        ...dealData,
                         pipelineId: toPipelineId,
                         stage: toStage,
                         createdAt: serverTimestamp(),
                         updatedAt: serverTimestamp()
                     });
 
-                    // Delete from old pipeline
+                    // Hard delete the old doc as it's a move, not a user deletion
                     await deleteDoc(doc(db, 'pipelines', fromPipelineId, 'deals', dealId));
 
                     // Update stats for both pipelines
@@ -196,15 +211,70 @@ export const DealsProvider = ({ children }) => {
         }
     };
 
+    // Soft delete
     const deleteDeal = async (pipelineId, dealId) => {
         try {
-            await deleteDoc(doc(db, 'pipelines', pipelineId, 'deals', dealId));
+            console.log('🗑️ Deleting deal:', { pipelineId, dealId });
+            await updateDoc(doc(db, 'pipelines', pipelineId, 'deals', dealId), {
+                status: 'deleted',
+                deletedAt: serverTimestamp(),
+                deletionSource: 'pipeline', // Track source
+                updatedAt: serverTimestamp()
+            });
+            console.log('✅ Deal deleted successfully');
 
             // Update pipeline stats
             await updatePipelineStats(pipelineId);
         } catch (error) {
-            console.error('Error deleting deal:', error);
+            console.error('❌ Error deleting deal:', error);
             throw error;
+        }
+    };
+
+    const restoreDeal = async (pipelineId, dealId) => {
+        try {
+            await updateDoc(doc(db, 'pipelines', pipelineId, 'deals', dealId), {
+                status: 'active',
+                deletedAt: null,
+                deletionSource: null,
+                updatedAt: serverTimestamp()
+            });
+            // Update pipeline stats
+            await updatePipelineStats(pipelineId);
+        } catch (error) {
+            console.error('Error restoring deal:', error);
+            throw error;
+        }
+    };
+
+    const permanentlyDeleteDeal = async (pipelineId, dealId) => {
+        try {
+            await deleteDoc(doc(db, 'pipelines', pipelineId, 'deals', dealId));
+        } catch (error) {
+            console.error('Error permanently deleting deal:', error);
+            throw error;
+        }
+    };
+
+    const getDeletedDeals = async () => {
+        try {
+            // We need to query all deals with status == 'deleted'
+            // Collection group query
+            const q = query(
+                collectionGroup(db, 'deals'),
+                where('status', '==', 'deleted'),
+                where('deletionSource', '==', 'pipeline')
+            );
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                deletedAt: doc.data().deletedAt?.toDate?.()?.toISOString() || new Date().toISOString()
+            }));
+
+        } catch (error) {
+            console.error("Error getting deleted deals", error);
+            return [];
         }
     };
 
@@ -223,6 +293,9 @@ export const DealsProvider = ({ children }) => {
         updateDeal,
         moveDeal,
         deleteDeal,
+        restoreDeal,
+        permanentlyDeleteDeal,
+        getDeletedDeals,
         getDealsByPipeline,
         getAllDeals
     };

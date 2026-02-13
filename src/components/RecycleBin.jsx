@@ -3,11 +3,29 @@ import { motion } from 'framer-motion';
 import Icon from '../components/AppIcon';
 import Button from '../components/ui/Button';
 
-const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelete }) => {
-    const [selectedLeads, setSelectedLeads] = useState([]);
+const RecycleBin = ({
+    isOpen,
+    onClose,
+    deletedLeads = [],
+    deletedDeals = [],
+    onRestore,
+    onPermanentDelete,
+    onRestoreDeal,
+    onPermanentDeleteDeal
+}) => {
+    const [activeTab, setActiveTab] = useState('leads'); // 'leads' or 'pipeline'
+    const [selectedItems, setSelectedItems] = useState([]);
     const [confirmDelete, setConfirmDelete] = useState(null);
 
+    // Reset selection when tab changes
+    React.useEffect(() => {
+        setSelectedItems([]);
+    }, [activeTab]);
+
+    const currentItems = activeTab === 'leads' ? deletedLeads : deletedDeals;
+
     const formatDate = (dateString) => {
+        if (!dateString) return '-';
         return new Date(dateString).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -18,34 +36,37 @@ const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelet
     };
 
     const handleSelectAll = () => {
-        if (selectedLeads.length === deletedLeads.length) {
-            setSelectedLeads([]);
+        if (selectedItems.length === currentItems.length) {
+            setSelectedItems([]);
         } else {
-            setSelectedLeads(deletedLeads.map(lead => lead.id));
+            setSelectedItems(currentItems.map(item => item.id));
         }
     };
 
-    const handleSelectLead = (leadId) => {
-        if (selectedLeads.includes(leadId)) {
-            setSelectedLeads(selectedLeads.filter(id => id !== leadId));
+    const handleSelectItem = (itemId) => {
+        if (selectedItems.includes(itemId)) {
+            setSelectedItems(selectedItems.filter(id => id !== itemId));
         } else {
-            setSelectedLeads([...selectedLeads, leadId]);
+            setSelectedItems([...selectedItems, itemId]);
         }
     };
 
     const handleRestoreSelected = () => {
-        selectedLeads.forEach(leadId => {
-            onRestore(leadId);
+        const restoreFunc = activeTab === 'leads' ? onRestore : onRestoreDeal;
+        selectedItems.forEach(itemId => {
+            restoreFunc(itemId);
         });
-        setSelectedLeads([]);
+        setSelectedItems([]);
     };
 
     const handleDeleteSelected = () => {
-        if (window.confirm(`Permanently delete ${selectedLeads.length} lead(s)? This action cannot be undone.`)) {
-            selectedLeads.forEach(leadId => {
-                onPermanentDelete(leadId);
+        const itemType = activeTab === 'leads' ? 'lead(s)' : 'deal(s)';
+        if (window.confirm(`Permanently delete ${selectedItems.length} ${itemType}? This action cannot be undone.`)) {
+            const deleteFunc = activeTab === 'leads' ? onPermanentDelete : onPermanentDeleteDeal;
+            selectedItems.forEach(itemId => {
+                deleteFunc(itemId);
             });
-            setSelectedLeads([]);
+            setSelectedItems([]);
         }
     };
 
@@ -63,7 +84,7 @@ const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelet
                         <div>
                             <h2 className="text-xl font-bold text-foreground">Recycle Bin</h2>
                             <p className="text-sm text-muted-foreground">
-                                {deletedLeads.length} deleted lead{deletedLeads.length !== 1 ? 's' : ''}
+                                Manage deleted items
                             </p>
                         </div>
                     </div>
@@ -75,11 +96,33 @@ const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelet
                     </button>
                 </div>
 
+                {/* Tabs */}
+                <div className="flex border-b border-border">
+                    <button
+                        onClick={() => setActiveTab('leads')}
+                        className={`flex-1 py-3 text-sm font-medium text-center transition-colors border-b-2 ${activeTab === 'leads'
+                                ? 'border-primary text-primary bg-primary/5'
+                                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/10'
+                            }`}
+                    >
+                        Deleted from Leads ({deletedLeads.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('pipeline')}
+                        className={`flex-1 py-3 text-sm font-medium text-center transition-colors border-b-2 ${activeTab === 'pipeline'
+                                ? 'border-primary text-primary bg-primary/5'
+                                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/10'
+                            }`}
+                    >
+                        Deleted from Pipeline ({deletedDeals.length})
+                    </button>
+                </div>
+
                 {/* Actions Bar */}
-                {selectedLeads.length > 0 && (
+                {selectedItems.length > 0 && (
                     <div className="px-6 py-3 bg-primary/5 border-b border-border flex items-center justify-between">
                         <span className="text-sm font-medium text-foreground">
-                            {selectedLeads.length} selected
+                            {selectedItems.length} selected
                         </span>
                         <div className="flex space-x-2">
                             <Button
@@ -94,7 +137,10 @@ const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelet
                             </Button>
                             <Button
                                 size="sm"
-                                onClick={handleDeleteSelected}
+                                onClick={() => {
+                                    /* Logic handled based on selected items */
+                                    handleDeleteSelected();
+                                }}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 iconName="Trash2"
                                 iconPosition="left"
@@ -108,37 +154,48 @@ const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelet
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto">
-                    {deletedLeads.length === 0 ? (
+                    {currentItems.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 px-6">
                             <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
                                 <Icon name="Trash2" size={40} className="text-muted-foreground" />
                             </div>
-                            <h3 className="text-lg font-semibold text-foreground mb-2">Recycle bin is empty</h3>
+                            <h3 className="text-lg font-semibold text-foreground mb-2">
+                                No deleted {activeTab === 'leads' ? 'leads' : 'deals'}
+                            </h3>
                             <p className="text-sm text-muted-foreground text-center max-w-sm">
-                                Deleted leads will appear here. You can restore them or permanently delete them.
+                                Deleted {activeTab === 'leads' ? 'leads' : 'deals'} will appear here.
                             </p>
                         </div>
                     ) : (
                         <table className="w-full">
                             <thead className="bg-muted/30 sticky top-0">
                                 <tr>
-                                    <th className="px-6 py-3 text-left">
+                                    <th className="px-6 py-3 text-left w-12">
                                         <input
                                             type="checkbox"
-                                            checked={selectedLeads.length === deletedLeads.length}
+                                            checked={selectedItems.length === currentItems.length && currentItems.length > 0}
                                             onChange={handleSelectAll}
                                             className="w-4 h-4 rounded border-border"
                                         />
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        Lead
+                                        Name
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        Company
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        Email
-                                    </th>
+                                    {activeTab === 'leads' && (
+                                        <>
+                                            <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                Company
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                Email
+                                            </th>
+                                        </>
+                                    )}
+                                    {activeTab === 'pipeline' && (
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                            Stage
+                                        </th>
+                                    )}
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                         Deleted
                                     </th>
@@ -148,9 +205,9 @@ const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelet
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
-                                {deletedLeads.map((lead) => (
+                                {currentItems.map((item) => (
                                     <motion.tr
-                                        key={lead.id}
+                                        key={item.id}
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         className="hover:bg-muted/20 transition-colors"
@@ -158,34 +215,54 @@ const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelet
                                         <td className="px-6 py-4">
                                             <input
                                                 type="checkbox"
-                                                checked={selectedLeads.includes(lead.id)}
-                                                onChange={() => handleSelectLead(lead.id)}
+                                                checked={selectedItems.includes(item.id)}
+                                                onChange={() => handleSelectItem(item.id)}
                                                 className="w-4 h-4 rounded border-border"
                                             />
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center">
-                                                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3">
+                                                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-3 shrink-0">
                                                     <span className="text-xs font-semibold text-muted-foreground">
-                                                        {lead.name?.charAt(0) || '?'}
+                                                        {activeTab === 'leads'
+                                                            ? (item.name?.charAt(0) || '?')
+                                                            : (item.title?.charAt(0) || '?')
+                                                        }
                                                     </span>
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-medium text-foreground">{lead.name || 'Unknown'}</p>
+                                                    <p className="text-sm font-medium text-foreground">
+                                                        {activeTab === 'leads' ? item.name : item.title}
+                                                    </p>
+                                                    {activeTab === 'pipeline' && item.accountName && (
+                                                        <p className="text-xs text-muted-foreground">{item.accountName}</p>
+                                                    )}
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-foreground">{lead.company || '-'}</td>
-                                        <td className="px-6 py-4 text-sm text-muted-foreground">{lead.email || '-'}</td>
+
+                                        {activeTab === 'leads' && (
+                                            <>
+                                                <td className="px-6 py-4 text-sm text-foreground">{item.company || '-'}</td>
+                                                <td className="px-6 py-4 text-sm text-muted-foreground">{item.email || '-'}</td>
+                                            </>
+                                        )}
+
+                                        {activeTab === 'pipeline' && (
+                                            <td className="px-6 py-4 text-sm text-muted-foreground capitalize">
+                                                {item.stage || '-'}
+                                            </td>
+                                        )}
+
                                         <td className="px-6 py-4 text-sm text-muted-foreground">
-                                            {formatDate(lead.deletedAt)}
+                                            {formatDate(item.deletedAt)}
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex space-x-2">
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => onRestore(lead.id)}
+                                                    onClick={() => activeTab === 'leads' ? onRestore(item.id) : onRestoreDeal(item.id)}
                                                     iconName="RotateCcw"
                                                     iconPosition="left"
                                                     iconSize={14}
@@ -196,7 +273,7 @@ const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelet
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => setConfirmDelete(lead)}
+                                                    onClick={() => setConfirmDelete(item)}
                                                     iconName="Trash2"
                                                     iconPosition="left"
                                                     iconSize={14}
@@ -239,9 +316,9 @@ const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelet
                                 <Icon name="AlertTriangle" size={20} className="text-destructive" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-semibold text-foreground">Permanently Delete Lead?</h3>
+                                <h3 className="text-sm font-semibold text-foreground">Permanently Delete Item?</h3>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                    Are you sure you want to permanently delete <span className="font-medium text-foreground">"{confirmDelete.name}"</span>? This action cannot be undone.
+                                    Are you sure you want to permanently delete <span className="font-medium text-foreground">"{activeTab === 'leads' ? confirmDelete.name : confirmDelete.title}"</span>? This action cannot be undone.
                                 </p>
                             </div>
                         </div>
@@ -252,7 +329,8 @@ const RecycleBin = ({ isOpen, onClose, deletedLeads, onRestore, onPermanentDelet
                             <Button
                                 size="sm"
                                 onClick={() => {
-                                    onPermanentDelete(confirmDelete.id);
+                                    const deleteFunc = activeTab === 'leads' ? onPermanentDelete : onPermanentDeleteDeal;
+                                    deleteFunc(confirmDelete.id);
                                     setConfirmDelete(null);
                                 }}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

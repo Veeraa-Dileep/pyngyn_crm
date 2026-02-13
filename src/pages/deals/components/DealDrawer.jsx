@@ -40,75 +40,75 @@ const DealDrawer = ({ deal, isOpen, onClose }) => {
   };
 
   const stageOptions = [
-  { value: 'New', label: 'New' },
-  { value: 'Qualified', label: 'Qualified' },
-  { value: 'Proposal', label: 'Proposal' },
-  { value: 'Negotiation', label: 'Negotiation' },
-  { value: 'Won', label: 'Won' },
-  { value: 'Lost', label: 'Lost' }];
+    { value: 'New', label: 'New' },
+    { value: 'Qualified', label: 'Qualified' },
+    { value: 'Proposal', label: 'Proposal' },
+    { value: 'Negotiation', label: 'Negotiation' },
+    { value: 'Won', label: 'Won' },
+    { value: 'Lost', label: 'Lost' }];
 
 
   const tabs = [
-  { id: 'overview', label: 'Overview', icon: 'Eye' },
-  { id: 'activities', label: 'Activities', icon: 'Calendar' },
-  { id: 'contacts', label: 'Contacts', icon: 'Users' },
-  { id: 'notes', label: 'Notes', icon: 'FileText' }];
+    { id: 'overview', label: 'Overview', icon: 'Eye' },
+    { id: 'activities', label: 'Activities', icon: 'Calendar' },
+    { id: 'contacts', label: 'Contacts', icon: 'Users' },
+    { id: 'notes', label: 'Notes', icon: 'FileText' }];
 
 
   const mockActivities = [
-  {
-    id: 1,
-    type: 'call',
-    title: 'Follow-up call scheduled',
-    description: 'Discussed pricing and implementation timeline',
-    date: '2025-11-02T14:30:00',
-    user: 'Sarah Johnson',
-    userAvatar: "https://images.unsplash.com/photo-1734991032476-bceab8383a59",
-    userAvatarAlt: 'Professional headshot of woman with shoulder-length brown hair in business attire'
-  },
-  {
-    id: 2,
-    type: 'email',
-    title: 'Proposal sent',
-    description: 'Comprehensive proposal with pricing breakdown sent to decision makers',
-    date: '2025-11-01T09:15:00',
-    user: 'Michael Chen',
-    userAvatar: "https://images.unsplash.com/photo-1687256457585-3608dfa736c5",
-    userAvatarAlt: 'Professional headshot of Asian man with short black hair in navy suit'
-  },
-  {
-    id: 3,
-    type: 'meeting',
-    title: 'Discovery meeting completed',
-    description: 'Identified key requirements and pain points',
-    date: '2025-10-28T11:00:00',
-    user: 'Sarah Johnson',
-    userAvatar: "https://images.unsplash.com/photo-1734991032476-bceab8383a59",
-    userAvatarAlt: 'Professional headshot of woman with shoulder-length brown hair in business attire'
-  }];
+    {
+      id: 1,
+      type: 'call',
+      title: 'Follow-up call scheduled',
+      description: 'Discussed pricing and implementation timeline',
+      date: '2025-11-02T14:30:00',
+      user: 'Sarah Johnson',
+      userAvatar: "https://images.unsplash.com/photo-1734991032476-bceab8383a59",
+      userAvatarAlt: 'Professional headshot of woman with shoulder-length brown hair in business attire'
+    },
+    {
+      id: 2,
+      type: 'email',
+      title: 'Proposal sent',
+      description: 'Comprehensive proposal with pricing breakdown sent to decision makers',
+      date: '2025-11-01T09:15:00',
+      user: 'Michael Chen',
+      userAvatar: "https://images.unsplash.com/photo-1687256457585-3608dfa736c5",
+      userAvatarAlt: 'Professional headshot of Asian man with short black hair in navy suit'
+    },
+    {
+      id: 3,
+      type: 'meeting',
+      title: 'Discovery meeting completed',
+      description: 'Identified key requirements and pain points',
+      date: '2025-10-28T11:00:00',
+      user: 'Sarah Johnson',
+      userAvatar: "https://images.unsplash.com/photo-1734991032476-bceab8383a59",
+      userAvatarAlt: 'Professional headshot of woman with shoulder-length brown hair in business attire'
+    }];
 
 
   const mockContacts = [
-  {
-    id: 1,
-    name: 'Jennifer Martinez',
-    title: 'VP of Operations',
-    email: 'j.martinez@techcorp.com',
-    phone: '+1 (555) 123-4567',
-    avatar: "https://images.unsplash.com/photo-1719515862094-c6e9354ee7f8",
-    avatarAlt: 'Professional headshot of Hispanic woman with long dark hair in white blouse',
-    isPrimary: true
-  },
-  {
-    id: 2,
-    name: 'Robert Chen',
-    title: 'IT Director',
-    email: 'r.chen@techcorp.com',
-    phone: '+1 (555) 123-4568',
-    avatar: "https://images.unsplash.com/photo-1687256457585-3608dfa736c5",
-    avatarAlt: 'Professional headshot of Asian man with glasses and short black hair in dark suit',
-    isPrimary: false
-  }];
+    {
+      id: 1,
+      name: 'Jennifer Martinez',
+      title: 'VP of Operations',
+      email: 'j.martinez@techcorp.com',
+      phone: '+1 (555) 123-4567',
+      avatar: "https://images.unsplash.com/photo-1719515862094-c6e9354ee7f8",
+      avatarAlt: 'Professional headshot of Hispanic woman with long dark hair in white blouse',
+      isPrimary: true
+    },
+    {
+      id: 2,
+      name: 'Robert Chen',
+      title: 'IT Director',
+      email: 'r.chen@techcorp.com',
+      phone: '+1 (555) 123-4568',
+      avatar: "https://images.unsplash.com/photo-1687256457585-3608dfa736c5",
+      avatarAlt: 'Professional headshot of Asian man with glasses and short black hair in dark suit',
+      isPrimary: false
+    }];
 
 
   const getActivityIcon = (type) => {
@@ -145,9 +145,9 @@ const DealDrawer = ({ deal, isOpen, onClose }) => {
     <>
       {/* Backdrop */}
       {isOpen &&
-      <div
-        className="fixed inset-0 bg-black/50 z-40"
-        onClick={onClose} />
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={onClose} />
 
       }
       {/* Drawer */}
@@ -216,16 +216,16 @@ const DealDrawer = ({ deal, isOpen, onClose }) => {
           {/* Tabs */}
           <div className="flex items-center space-x-1 p-4 border-b border-border">
             {tabs?.map((tab) =>
-            <button
-              key={tab?.id}
-              onClick={() => setActiveTab(tab?.id)}
-              className={`
+              <button
+                key={tab?.id}
+                onClick={() => setActiveTab(tab?.id)}
+                className={`
                   flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-smooth
                   ${activeTab === tab?.id ?
-              'bg-primary text-primary-foreground' :
-              'text-muted-foreground hover:text-foreground hover:bg-muted'}
+                    'bg-primary text-primary-foreground' :
+                    'text-muted-foreground hover:text-foreground hover:bg-muted'}
                 `
-              }>
+                }>
 
                 <Icon name={tab?.icon} size={16} />
                 <span>{tab?.label}</span>
@@ -236,7 +236,7 @@ const DealDrawer = ({ deal, isOpen, onClose }) => {
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
             {activeTab === 'overview' &&
-            <div className="space-y-6">
+              <div className="space-y-6">
                 {/* Deal Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
@@ -269,7 +269,8 @@ const DealDrawer = ({ deal, isOpen, onClose }) => {
                       <label className="text-sm font-medium text-muted-foreground">Close Date</label>
                       <p className="text-foreground">{formatDate(deal?.closeDate)}</p>
                     </div>
-                    {isEditing &&
+                    {/* STAGE EDITING DISABLED - Uncomment below to re-enable stage editing in edit mode */}
+                    {/* {isEditing &&
                   <div>
                         <Select
                       label="Stage"
@@ -278,7 +279,7 @@ const DealDrawer = ({ deal, isOpen, onClose }) => {
                       onChange={(value) => console.log('Stage changed to:', value)} />
 
                       </div>
-                  }
+                  } */}
                   </div>
                 </div>
 
@@ -286,22 +287,22 @@ const DealDrawer = ({ deal, isOpen, onClose }) => {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Description</label>
                   {isEditing ?
-                <textarea
-                  className="w-full mt-1 p-3 border border-border rounded-lg resize-none"
-                  rows={4}
-                  defaultValue={deal?.description || `Enterprise software solution for ${deal?.account} to streamline their operations and improve efficiency. This deal includes implementation, training, and ongoing support services.`} /> :
+                    <textarea
+                      className="w-full mt-1 p-3 border border-border rounded-lg resize-none"
+                      rows={4}
+                      defaultValue={deal?.description || `Enterprise software solution for ${deal?.account} to streamline their operations and improve efficiency. This deal includes implementation, training, and ongoing support services.`} /> :
 
 
-                <p className="text-foreground mt-1">
+                    <p className="text-foreground mt-1">
                       {deal?.description || `Enterprise software solution for ${deal?.account} to streamline their operations and improve efficiency. This deal includes implementation, training, and ongoing support services.`}
                     </p>
-                }
+                  }
                 </div>
               </div>
             }
 
             {activeTab === 'activities' &&
-            <div className="space-y-4">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium text-foreground">Recent Activities</h3>
                   <Button variant="outline" size="sm">
@@ -311,7 +312,7 @@ const DealDrawer = ({ deal, isOpen, onClose }) => {
                 </div>
                 <div className="space-y-4">
                   {mockActivities?.map((activity) =>
-                <div key={activity?.id} className="flex space-x-3 p-4 bg-muted/30 rounded-lg">
+                    <div key={activity?.id} className="flex space-x-3 p-4 bg-muted/30 rounded-lg">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getActivityColor(activity?.type)} bg-current/10`}>
                         <Icon name={getActivityIcon(activity?.type)} size={16} className={getActivityColor(activity?.type)} />
                       </div>
@@ -326,22 +327,22 @@ const DealDrawer = ({ deal, isOpen, onClose }) => {
                         <div className="flex items-center space-x-2 mt-2">
                           <div className="w-5 h-5 rounded-full overflow-hidden">
                             <img
-                          src={activity?.userAvatar}
-                          alt={activity?.userAvatarAlt}
-                          className="w-full h-full object-cover" />
+                              src={activity?.userAvatar}
+                              alt={activity?.userAvatarAlt}
+                              className="w-full h-full object-cover" />
 
                           </div>
                           <span className="text-xs text-muted-foreground">{activity?.user}</span>
                         </div>
                       </div>
                     </div>
-                )}
+                  )}
                 </div>
               </div>
             }
 
             {activeTab === 'contacts' &&
-            <div className="space-y-4">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium text-foreground">Associated Contacts</h3>
                   <Button variant="outline" size="sm">
@@ -351,22 +352,22 @@ const DealDrawer = ({ deal, isOpen, onClose }) => {
                 </div>
                 <div className="space-y-3">
                   {mockContacts?.map((contact) =>
-                <div key={contact?.id} className="flex items-center space-x-3 p-4 bg-muted/30 rounded-lg">
+                    <div key={contact?.id} className="flex items-center space-x-3 p-4 bg-muted/30 rounded-lg">
                       <div className="w-10 h-10 rounded-full overflow-hidden">
                         <img
-                      src={contact?.avatar}
-                      alt={contact?.avatarAlt}
-                      className="w-full h-full object-cover" />
+                          src={contact?.avatar}
+                          alt={contact?.avatarAlt}
+                          className="w-full h-full object-cover" />
 
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
                           <h4 className="font-medium text-foreground">{contact?.name}</h4>
                           {contact?.isPrimary &&
-                      <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                            <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
                               Primary
                             </span>
-                      }
+                          }
                         </div>
                         <p className="text-sm text-muted-foreground">{contact?.title}</p>
                         <div className="flex items-center space-x-4 mt-1">
@@ -383,13 +384,13 @@ const DealDrawer = ({ deal, isOpen, onClose }) => {
                         </Button>
                       </div>
                     </div>
-                )}
+                  )}
                 </div>
               </div>
             }
 
             {activeTab === 'notes' &&
-            <div className="space-y-4">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium text-foreground">Notes</h3>
                   <Button variant="outline" size="sm">

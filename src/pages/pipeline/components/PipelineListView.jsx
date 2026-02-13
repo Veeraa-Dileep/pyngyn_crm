@@ -227,7 +227,8 @@ const PipelineListView = ({
                                             </div>
                                         </td>
                                         <td className="px-4 py-4">
-                                            <select
+                                            {/* STAGE EDITING DISABLED - Uncomment below to re-enable stage editing */}
+                                            {/* <select
                                                 value={deal?.stage}
                                                 onChange={(e) => onStageChange?.(deal?.id, e.target.value)}
                                                 onClick={(e) => e.stopPropagation()}
@@ -238,7 +239,11 @@ const PipelineListView = ({
                                                         {stage.name}
                                                     </option>
                                                 ))}
-                                            </select>
+                                            </select> */}
+                                            {/* Read-only stage badge */}
+                                            <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full border ${getStageColor(deal?.stage)}`}>
+                                                {getStageName(deal?.stage)}
+                                            </span>
                                         </td>
                                         <td className="px-4 py-4">
                                             <div className={`text-sm font-medium ${closeDateStatus?.color}`}>
@@ -311,7 +316,8 @@ const PipelineListView = ({
                                         <h3 className="font-semibold text-foreground text-sm">{deal?.title}</h3>
                                         <p className="text-xs text-muted-foreground mt-0.5">{deal?.accountName}</p>
                                     </div>
-                                    <select
+                                    {/* STAGE EDITING DISABLED - Uncomment below to re-enable stage editing */}
+                                    {/* <select
                                         value={deal?.stage}
                                         onChange={(e) => onStageChange?.(deal?.id, e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
@@ -322,7 +328,11 @@ const PipelineListView = ({
                                                 {stage.name}
                                             </option>
                                         ))}
-                                    </select>
+                                    </select> */}
+                                    {/* Read-only stage badge */}
+                                    <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full border ${getStageColor(deal?.stage)}`}>
+                                        {getStageName(deal?.stage)}
+                                    </span>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 mb-3">

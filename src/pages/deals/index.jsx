@@ -98,20 +98,11 @@ const DealsPage = () => {
       setLeads(data);
     });
 
-    // Fetch deleted leads
-    const qDeleted = query(collection(db, "leads"), where("status", "==", "deleted"));
-    const unsubDeleted = onSnapshot(qDeleted, (snap) => {
-      const data = snap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        deletedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-      }));
-      setDeletedLeads(data);
-    });
+    // Note: Deleted leads are now managed globally in AppLayout component
+    // No need to fetch them here
 
     return () => {
       unsub();
-      unsubDeleted();
     };
   }, []);
 
@@ -205,7 +196,8 @@ const DealsPage = () => {
         tags: [lead.source || 'Lead'],
         email: lead.email,
         mobile: lead.mobile,
-        leadId: leadId
+        leadId: leadId,
+        deletionSource: 'leads' // Track that this came from leads page originally
       };
 
       addDeal(pipelineId, newDeal);

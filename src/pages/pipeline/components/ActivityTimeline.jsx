@@ -4,12 +4,16 @@ import { collection, query, where, onSnapshot, addDoc, serverTimestamp, orderBy 
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const ActivityTimeline = ({ deal, showToast }) => {
+const ActivityTimeline = ({ deal, showToast, notes, onNotesChange }) => {
+    const [activeView, setActiveView] = useState('activities');
     const [activities, setActivities] = useState([]);
+    const [notesList, setNotesList] = useState([]);
     const [newActivity, setNewActivity] = useState('');
+    const [newNote, setNewNote] = useState('');
     const [isAddingActivity, setIsAddingActivity] = useState(false);
+    const [isAddingNote, setIsAddingNote] = useState(false);
 
-    // Fetch activities from Firebase
+    // Fetch activities from Firebase (excluding notes)
     useEffect(() => {
         if (!deal?.id) return;
 
@@ -20,15 +24,41 @@ const ActivityTimeline = ({ deal, showToast }) => {
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const activityData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+            const activityData = snapshot.docs
+                .map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }))
+                .filter(activity => activity.type !== 'note'); // Exclude notes from activities
             setActivities(activityData);
         });
 
         return () => unsubscribe();
     }, [deal?.id]);
+
+    // Fetch notes from Firebase (only notes)
+    useEffect(() => {
+        if (!deal?.id) return;
+
+        const q = query(
+            collection(db, 'activities'),
+            where('dealId', '==', deal.id),
+            orderBy('createdAt', 'desc')
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const notesData = snapshot.docs
+                .map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }))
+                .filter(activity => activity.type === 'note'); // Filter notes on client side
+            setNotesList(notesData);
+        });
+
+        return () => unsubscribe();
+    }, [deal?.id]);
+
 
     const handleAddActivity = async () => {
         if (!newActivity.trim()) return;
@@ -37,7 +67,7 @@ const ActivityTimeline = ({ deal, showToast }) => {
             setIsAddingActivity(true);
             await addDoc(collection(db, 'activities'), {
                 dealId: deal.id,
-                type: 'note',
+                type: 'activity',  // Changed from 'note' to 'activity'
                 content: newActivity.trim(),
                 createdAt: serverTimestamp(),
                 createdBy: deal.owner?.name || 'Unknown User'
@@ -49,6 +79,28 @@ const ActivityTimeline = ({ deal, showToast }) => {
             showToast('Failed to add activity', 'error');
         } finally {
             setIsAddingActivity(false);
+        }
+    };
+
+    const handleAddNote = async () => {
+        if (!newNote.trim()) return;
+
+        try {
+            setIsAddingNote(true);
+            await addDoc(collection(db, 'activities'), {
+                dealId: deal.id,
+                type: 'note',
+                content: newNote.trim(),
+                createdAt: serverTimestamp(),
+                createdBy: deal.owner?.name || 'Unknown User'
+            });
+            setNewNote('');
+            showToast('Note added successfully', 'success');
+        } catch (error) {
+            console.error('Error adding note:', error);
+            showToast('Failed to add note', 'error');
+        } finally {
+            setIsAddingNote(false);
         }
     };
 
@@ -97,82 +149,177 @@ const ActivityTimeline = ({ deal, showToast }) => {
 
     return (
         <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-foreground">Activity Timeline</h3>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Icon name="Filter" size={16} />
-                </Button>
+            {/* Toggle between Activities and Notes */}
+            <div className="flex items-center space-x-1 border-b border-border mb-4">
+                <button
+                    onClick={() => setActiveView('activities')}
+                    className={`px-4 py-2 font-medium text-sm transition-colors ${activeView === 'activities'
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                >
+                    Activities
+                </button>
+                <button
+                    onClick={() => setActiveView('notes')}
+                    className={`px-4 py-2 font-medium text-sm transition-colors ${activeView === 'notes'
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                >
+                    Notes
+                </button>
             </div>
 
-            {/* Add Activity */}
-            <div className="mb-4">
-                <div className="flex space-x-2">
-                    <input
-                        type="text"
-                        value={newActivity}
-                        onChange={(e) => setNewActivity(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleAddActivity()}
-                        placeholder="Log an activity..."
-                        className="flex-1 px-3 py-2 text-sm bg-background border border-border rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-smooth"
-                    />
-                    <Button
-                        size="sm"
-                        onClick={handleAddActivity}
-                        disabled={!newActivity.trim() || isAddingActivity}
-                        className="px-3"
-                    >
-                        <Icon name="Plus" size={16} />
-                    </Button>
-                </div>
-            </div>
-
-            {/* Timeline */}
-            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-                {activities.length === 0 ? (
-                    <div className="text-center py-12">
-                        <Icon name="Activity" size={48} className="mx-auto mb-3 text-muted-foreground opacity-30" />
-                        <p className="text-sm text-muted-foreground">No activities yet</p>
-                        <p className="text-xs text-muted-foreground mt-1">Log your first activity above</p>
+            {/* Activities View */}
+            {activeView === 'activities' && (
+                <>
+                    {/* Add Activity */}
+                    <div className="mb-4">
+                        <div className="flex space-x-2">
+                            <input
+                                type="text"
+                                value={newActivity}
+                                onChange={(e) => setNewActivity(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleAddActivity()}
+                                placeholder="Log an activity..."
+                                className="flex-1 px-3 py-2 text-sm bg-background border border-border rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-smooth"
+                            />
+                            <Button
+                                size="sm"
+                                onClick={handleAddActivity}
+                                disabled={!newActivity.trim() || isAddingActivity}
+                                className="px-3"
+                            >
+                                <Icon name="Plus" size={16} />
+                            </Button>
+                        </div>
                     </div>
-                ) : (
-                    activities.map((activity, index) => {
-                        const icon = getActivityIcon(activity.type);
-                        return (
-                            <div key={activity.id} className="flex space-x-3">
-                                {/* Timeline Line */}
-                                <div className="flex flex-col items-center">
-                                    <div className={`w-8 h-8 rounded-full bg-muted flex items-center justify-center ${icon.color}`}>
-                                        <Icon name={icon.name} size={14} />
-                                    </div>
-                                    {index < activities.length - 1 && (
-                                        <div className="w-0.5 flex-1 bg-border mt-2" style={{ minHeight: '20px' }} />
-                                    )}
-                                </div>
 
-                                {/* Activity Content */}
-                                <div className="flex-1 pb-4">
-                                    <div className="flex items-start justify-between mb-1">
-                                        <span className="text-sm font-medium text-foreground">
-                                            {activity.createdBy}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground">
-                                            {formatActivityTime(activity.createdAt)}
-                                        </span>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">
-                                        {activity.content}
-                                    </p>
-                                    {activity.metadata && (
-                                        <div className="mt-2 text-xs text-muted-foreground">
-                                            {activity.metadata}
-                                        </div>
-                                    )}
-                                </div>
+                    {/* Timeline */}
+                    <div className="flex-1 overflow-y-auto space-y-4 pr-2 max-h-[350px]">
+                        {activities.length === 0 ? (
+                            <div className="text-center py-12">
+                                <Icon name="Activity" size={48} className="mx-auto mb-3 text-muted-foreground opacity-30" />
+                                <p className="text-sm text-muted-foreground">No activities yet</p>
+                                <p className="text-xs text-muted-foreground mt-1">Log your first activity above</p>
                             </div>
-                        );
-                    })
-                )}
-            </div>
+                        ) : (
+                            activities.map((activity, index) => {
+                                const icon = getActivityIcon(activity.type);
+                                return (
+                                    <div key={activity.id} className="flex space-x-3">
+                                        {/* Timeline Line */}
+                                        <div className="flex flex-col items-center">
+                                            <div className={`w-8 h-8 rounded-full bg-muted flex items-center justify-center ${icon.color}`}>
+                                                <Icon name={icon.name} size={14} />
+                                            </div>
+                                            {index < activities.length - 1 && (
+                                                <div className="w-0.5 flex-1 bg-border mt-2" style={{ minHeight: '20px' }} />
+                                            )}
+                                        </div>
+
+                                        {/* Activity Content */}
+                                        <div className="flex-1 pb-4">
+                                            <div className="flex items-start justify-between mb-1">
+                                                <span className="text-sm font-medium text-foreground">
+                                                    {activity.createdBy}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {formatActivityTime(activity.createdAt)}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                                {activity.content}
+                                            </p>
+                                            {activity.metadata && (
+                                                <div className="mt-2 text-xs text-muted-foreground">
+                                                    {activity.metadata}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                </>
+            )}
+
+            {/* Notes View */}
+            {activeView === 'notes' && (
+                <>
+                    {/* Add Note */}
+                    <div className="mb-4">
+                        <div className="flex space-x-2">
+                            <textarea
+                                value={newNote}
+                                onChange={(e) => setNewNote(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleAddNote())}
+                                placeholder="Log an internal note..."
+                                rows={2}
+                                className="flex-1 px-3 py-2 text-sm bg-background border border-border rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-smooth resize-none"
+                            />
+                            <Button
+                                size="sm"
+                                onClick={handleAddNote}
+                                disabled={!newNote.trim() || isAddingNote}
+                                className="px-3 my-auto"
+                            >
+                                <Icon name="Plus" size={16} />
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Notes Timeline */}
+                    <div className="flex-1 overflow-y-auto space-y-4 pr-2 max-h-[350px]">
+                        {notesList.length === 0 ? (
+                            <div className="text-center py-12">
+                                <Icon name="FileText" size={48} className="mx-auto mb-3 text-muted-foreground opacity-30" />
+                                <p className="text-sm text-muted-foreground">No notes yet</p>
+                                <p className="text-xs text-muted-foreground mt-1">Log your first note above</p>
+                            </div>
+                        ) : (
+                            notesList.map((note, index) => {
+                                const icon = getActivityIcon(note.type);
+                                return (
+                                    <div key={note.id} className="flex space-x-3">
+                                        {/* Timeline Line */}
+                                        <div className="flex flex-col items-center">
+                                            <div className={`w-8 h-8 rounded-full bg-muted flex items-center justify-center ${icon.color}`}>
+                                                <Icon name={icon.name} size={14} />
+                                            </div>
+                                            {index < notesList.length - 1 && (
+                                                <div className="w-0.5 flex-1 bg-border mt-2" style={{ minHeight: '20px' }} />
+                                            )}
+                                        </div>
+
+                                        {/* Note Content */}
+                                        <div className="flex-1 pb-4">
+                                            <div className="flex items-start justify-between mb-1">
+                                                <span className="text-sm font-medium text-foreground">
+                                                    {note.createdBy}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {formatActivityTime(note.createdAt)}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                                {note.content}
+                                            </p>
+                                            {note.metadata && (
+                                                <div className="mt-2 text-xs text-muted-foreground">
+                                                    {note.metadata}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 };

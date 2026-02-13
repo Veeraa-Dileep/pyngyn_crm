@@ -136,7 +136,8 @@ const DealCard = ({ deal, onEdit, onDelete }) => {
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-sm text-primary truncate pr-8 leading-tight">
-              {(deal?.name || deal?.company || deal?.title || 'Untitled')}'s Opportunity
+              {/* Use name if available (new deals), otherwise use title (old deals) */}
+              {(deal?.name || deal?.title || deal?.email?.split('@')[0] || 'Untitled')}'s Opportunity
             </h3>
           </div>
         </div>
@@ -146,13 +147,15 @@ const DealCard = ({ deal, onEdit, onDelete }) => {
           <div className="flex items-center space-x-1.5">
             <Icon name="User" size={14} className="text-muted-foreground shrink-0" />
             <span className="text-xs font-medium text-foreground truncate">
-              {deal?.name || '-'}
+              {/* Show name (new deals) or title (old deals) */}
+              {deal?.name || deal?.title || deal?.email || '-'}
             </span>
           </div>
           <div className="flex items-center space-x-1.5">
             <Icon name="Building2" size={14} className="text-muted-foreground shrink-0" />
             <span className="text-xs text-muted-foreground truncate">
-              {deal?.company || '-'}
+              {/* Show company (new deals) or extract from email domain (old deals) or accountName */}
+              {deal?.company || deal?.accountName || (deal?.email ? deal.email.split('@')[1]?.split('.')[0] : '-')}
             </span>
           </div>
         </div>

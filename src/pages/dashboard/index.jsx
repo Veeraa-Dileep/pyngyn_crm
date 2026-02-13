@@ -61,65 +61,65 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <AppLayout>
-      <motion.Helmet>
-        <title>Dashboard</title>
-      </motion.Helmet>
-      <main className="lg:ml-6 pt-6">
-        <div className="flex">
-          {/* Main Content */}
-          <div className="flex-1 p-4 lg:p-6 xl:pr-0">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              {/* Page Header */}
-              <div className="mb-8">
-                <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
-                  Dashboard
-                </h1>
-                <p className="text-muted-foreground">
-                  Welcome back! Here's what's happening with your sales pipeline today.
-                </p>
-              </div>
+        <motion.Helmet>
+          <title>Dashboard</title>
+        </motion.Helmet>
+        <main className="lg:ml-6 pt-6">
+          <div className="flex">
+            {/* Main Content */}
+            <div className="flex-1 p-4 lg:p-6 xl:pr-0">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {/* Page Header */}
+                <div className="mb-8">
+                  <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                    Dashboard
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Welcome back! Here's what's happening with your sales pipeline today.
+                  </p>
+                </div>
 
-              {/* KPI Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-                {kpiData?.map((kpi, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <KPICard {...kpi} />
-                  </motion.div>
-                ))}
-              </div>
+                {/* KPI Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                  {kpiData?.map((kpi, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                    >
+                      <KPICard {...kpi} />
+                    </motion.div>
+                  ))}
+                </div>
 
-              {/* Pipeline Chart */}
-              <div className="mb-8">
-                <PipelineChart />
-              </div>
+                {/* Pipeline Chart */}
+                <div className="mb-8">
+                  <PipelineChart />
+                </div>
 
-              {/* Recent Activities 
+                {/* Recent Activities 
               <div className="mb-8">
                 <RecentActivities />
               </div>*/}
-            </motion.div>
-          </div>
+              </motion.div>
+            </div>
 
-          {/* Right Rail 
+            {/* Right Rail 
           <div className="hidden xl:block w-80 p-6 border-l border-border bg-background">
             <RightRail />
           </div>*/}
-        </div>
-      </main>
+          </div>
+        </main>
       </AppLayout>
     </div>
-    
+
   );
-    
+
 };
 
 export default Dashboard;

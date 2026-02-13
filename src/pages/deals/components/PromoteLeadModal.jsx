@@ -25,14 +25,15 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
             setNewPipelineName('');
             setNewPipelineDescription('');
             setSelectedStage('new');
-            setAssignedTo('');
+            // Auto-select first assignee if available
+            setAssignedTo(members.length > 0 ? members[0].id : '');
             // Set default close date to 30 days from now
             const defaultCloseDate = new Date();
             defaultCloseDate.setDate(defaultCloseDate.getDate() + 30);
             setCloseDate(defaultCloseDate.toISOString().split('T')[0]);
             setPriority('Medium');
         }
-    }, [isOpen, pipelines]);
+    }, [isOpen, pipelines, members]);
 
     const selectedPipeline = pipelines.find(p => p.id === selectedPipelineId);
 
@@ -52,6 +53,12 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
     };
 
     const handlePromote = async () => {
+        // Validate assignee selection
+        if (!assignedTo) {
+            alert('Please select an assignee');
+            return;
+        }
+
         if (isCreatingNew) {
             if (!newPipelineName.trim()) {
                 alert('Please enter a pipeline name');
@@ -180,7 +187,7 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
                         </div>
                     )}
 
-                    {/* Stage Selection */}
+                    {/* Stage Selection 
                     {!isCreatingNew && selectedPipeline && (
                         <div>
                             <label className="block text-sm font-medium text-foreground mb-1.5">
@@ -198,19 +205,19 @@ const PromoteLeadModal = ({ isOpen, onClose, onPromote, lead }) => {
                                 ))}
                             </select>
                         </div>
-                    )}
+                    )}*/}
 
                     {/* Assign To */}
                     <div>
                         <label className="block text-sm font-medium text-foreground mb-1.5">
-                            Assign To (Optional)
+                            Assign To <span className="text-error">*</span>
                         </label>
                         <select
                             value={assignedTo}
                             onChange={(e) => setAssignedTo(e.target.value)}
+                            required
                             className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         >
-                            <option value="">Unassigned</option>
                             {members.map(member => (
                                 <option key={member.id} value={member.id}>
                                     {member.name}
