@@ -20,19 +20,20 @@ const DealsContext = createContext();
 // Mock deal  data for the default pipeline
 const DEFAULT_DEAL = {
     title: 'Enterprise Software License',
-    accountName: 'TechCorp Solutions',
+    contactName: 'John Doe',
+    company: 'TechCorp Solutions',
+    email: '',
+    mobile: '',
     value: 125000,
     owner: {
         id: 'john-doe',
         name: 'John Doe',
-        avatar: "https://images.unsplash.com/photo-1588178457501-31b7688a41a0",
-        avatarAlt: 'Professional headshot of John Doe in navy suit with short brown hair'
     },
     closeDate: '2025-01-15',
     priority: 'High',
     probability: 85,
     stage: 'new',
-    tags: ['Enterprise', 'Software', 'Renewal'],
+    source: 'Enterprise',
     pipelineId: 'sales-pipeline'
 };
 

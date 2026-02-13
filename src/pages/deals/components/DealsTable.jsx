@@ -159,7 +159,7 @@ const DealsTable = ({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border text-sm">
             {paginatedDeals?.map((deal) => (
               <tr
                 key={deal?.id}
@@ -183,7 +183,7 @@ const DealsTable = ({
                   </div>
                 </td>
                 <td className="px-4 py-4">
-                  <div className="text-foreground">{deal?.name}</div>
+                  <div className="font-medium text-foreground">{deal?.name}</div>
                 </td>
                 <td className="px-4 py-4">
                   <div className="font-medium text-foreground">
@@ -201,7 +201,7 @@ const DealsTable = ({
                   </div>
                 </td>
                 <td className="px-4 py-4">
-                  <div className="text-sm text-foreground">{deal?.source}</div>
+                  <div className="font- text-foreground">{deal?.source}</div>
                 </td>
                 <td className="px-4 py-4">
                   <div className="text-sm font-medium">

@@ -140,7 +140,7 @@ const Pipeline = () => {
     return deals?.filter((deal) => {
       // Search filter
       if (filters?.search && !deal?.title?.toLowerCase()?.includes(filters?.search?.toLowerCase()) &&
-        !deal?.accountName?.toLowerCase()?.includes(filters?.search?.toLowerCase())) {
+        !deal?.company?.toLowerCase()?.includes(filters?.search?.toLowerCase())) {
         return false;
       }
 

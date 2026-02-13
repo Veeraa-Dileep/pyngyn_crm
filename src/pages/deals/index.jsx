@@ -178,26 +178,23 @@ const DealsPage = () => {
 
       // Create a deal from the lead using DealsContext
       const newDeal = {
-        title: lead.name || lead.company || 'Untitled Deal',
-        name: lead.name || '',  // Preserve contact name
-        company: lead.company || '',  // Preserve company name
-        accountName: lead.company || lead.name || 'Unknown',
+        title: lead.title || `${lead.name || lead.company || 'Untitled'}'s Opportunity`,
+        contactName: lead.name || '',
+        company: lead.company || '',
         value: lead.value || 0,
         owner: {
           id: assignedTo || 'unassigned',
           name: members.find(m => m.id === assignedTo)?.name || 'Unassigned',
-          avatar: '',
-          avatarAlt: ''
         },
         closeDate: closeDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         priority: priority || 'Medium',
         probability: 50,
         stage: stage,
-        tags: [lead.source || 'Lead'],
+        source: lead.source || 'Lead',
         email: lead.email,
         mobile: lead.mobile,
         leadId: leadId,
-        deletionSource: 'leads' // Track that this came from leads page originally
+        deletionSource: 'leads'
       };
 
       addDeal(pipelineId, newDeal);

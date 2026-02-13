@@ -74,7 +74,7 @@ const Pipelines = () => {
                         {/* Page Header */}
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                             <div>
-                                <h1 className="text-2xl font-bold text-foreground">Pipelines</h1>
+                                <h1 className="text-2xl lg:text-3xl font-bold">Pipelines</h1>
                                 <p className="text-muted-foreground">
                                     Manage your sales pipelines and workflows
                                 </p>

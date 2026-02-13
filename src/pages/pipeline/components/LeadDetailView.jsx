@@ -7,15 +7,15 @@ import ActivityTimeline from './ActivityTimeline';
 const LeadDetailView = ({ deal, isOpen, onClose, onSave, teamMembers, showToast }) => {
     const [formData, setFormData] = useState({
         title: '',
-        accountName: '',
+        company: '',
         value: 0,
         probability: 50,
         contactName: '',
         email: '',
-        phone: '',
+        mobile: '',
         owner: null,
         closeDate: '',
-        tags: [],
+        source: '',
         notes: '',
         status: 'new'
     });
@@ -25,15 +25,15 @@ const LeadDetailView = ({ deal, isOpen, onClose, onSave, teamMembers, showToast 
         if (deal) {
             setFormData({
                 title: deal.title || '',
-                accountName: deal.accountName || '',
+                company: deal.company || '',
                 value: deal.value || 0,
                 probability: deal.probability || 50,
-                contactName: deal.contactName || deal.owner?.name || '',
+                contactName: deal.contactName || '',
                 email: deal.email || '',
-                phone: deal.mobile || deal.phone || '',
+                mobile: deal.mobile || '',
                 owner: deal.owner?.id || null,
                 closeDate: deal.closeDate || '',
-                tags: deal.tags || [],
+                source: deal.source || '',
                 notes: deal.notes || '',
                 status: deal.status || 'new'
             });
@@ -153,23 +153,20 @@ const LeadDetailView = ({ deal, isOpen, onClose, onSave, teamMembers, showToast 
                                     <div>
                                         <span>
                                             <h1 className="text-3xl font-bold text-foreground mb-2">
-                                                {/* Use name if available (new deals), otherwise use title (old deals) */}
-                                                {(deal?.name || deal?.title || deal?.email?.split('@')[0] || 'Untitled')}'s Opportunity
+                                                {deal?.title || 'Untitled'}
                                             </h1>
                                         </span>
                                         <div className="space-y-1">
                                             <div className="flex items-center space-x-1.5">
                                                 <Icon name="User" size={26} className="text-muted-foreground shrink-0" />
                                                 <span className="text-lg font-medium text-foreground truncate">
-                                                    {/* Show name (new deals) or title (old deals) */}
-                                                    {deal?.name || deal?.title || deal?.email || '-'}
+                                                    {deal?.contactName || '-'}
                                                 </span>
                                             </div>
                                             <div className="flex items-center space-x-1.5">
                                                 <Icon name="Building2" size={26} className="text-muted-foreground shrink-0" />
                                                 <span className="text-lg font-medium text-muted-foreground truncate">
-                                                    {/* Show company (new deals) or extract from email domain (old deals) */}
-                                                    {deal?.company || deal?.accountName || (deal?.email ? deal.email.split('@')[1]?.split('.')[0] : '-')}
+                                                    {deal?.company || '-'}
                                                 </span>
                                             </div>
                                         </div>
@@ -177,56 +174,91 @@ const LeadDetailView = ({ deal, isOpen, onClose, onSave, teamMembers, showToast 
 
 
                                     {/* Contact Information */}
-                                    <div className="bg-muted/30 rounded-xl p-6 space-y-4">
-                                        <h3 className="text-lg font-semibold text-foreground mb-4">Contact Information</h3>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                                    Contact Name
-                                                </label>
-                                                <p className="text-foreground font-medium">{formData.contactName || '-'}</p>
+                                    <div className="bg-card border border-border/40 rounded-xl p-6 shadow-sm space-y-6">
+                                        <div className="flex items-center space-x-3 border-b border-border/40 pb-4">
+                                            <div className="p-2 bg-primary/10 rounded-lg">
+                                                <Icon name="Contact" size={20} className="text-primary" />
                                             </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                                    Email
-                                                </label>
-                                                <p className="text-foreground">{formData.email || '-'}</p>
-                                            </div>
-
-
+                                            <h3 className="text-lg font-semibold text-foreground">Contact & Deal Details</h3>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
-
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                                    Phone
-                                                </label>
-                                                <p className="text-foreground">{formData.phone || '-'}</p>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                            {/* Contact Name */}
+                                            <div className="space-y-2 group">
+                                                <div className="flex items-center space-x-2 text-muted-foreground group-hover:text-primary transition-colors">
+                                                    <Icon name="User" size={16} />
+                                                    <span className="text-xs font-medium uppercase tracking-wider">Contact Name</span>
+                                                </div>
+                                                <p className="text-foreground font-medium pl-6 text-base">{formData.contactName || '-'}</p>
                                             </div>
 
-                                            <div>
-                                                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                                    Salesperson
-                                                </label>
-                                                <p className="text-foreground font-medium">
-                                                    {teamMembers?.find(m => m.id === formData.owner)?.name || 'Unassigned'}
-                                                </p>
+                                            {/* Salesperson */}
+                                            <div className="space-y-2 group">
+                                                <div className="flex items-center space-x-2 text-muted-foreground group-hover:text-primary transition-colors">
+                                                    <Icon name="UserCheck" size={16} />
+                                                    <span className="text-xs font-medium uppercase tracking-wider">Salesperson</span>
+                                                </div>
+                                                <div className="pl-6 flex items-center">
+                                                    {formData.owner ? (
+                                                        <div className="flex items-center space-x-2">
+                                                            <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-secondary-foreground">
+                                                                {(teamMembers?.find(m => m.id === formData.owner)?.name || deal?.owner?.name || '?').charAt(0)}
+                                                            </div>
+                                                            <span className="text-foreground font-medium">
+                                                                {teamMembers?.find(m => m.id === formData.owner)?.name || deal?.owner?.name}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-muted-foreground">Unassigned</span>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
 
+                                            {/* Email */}
+                                            <div className="space-y-2 group">
+                                                <div className="flex items-center space-x-2 text-muted-foreground group-hover:text-primary transition-colors">
+                                                    <Icon name="Mail" size={16} />
+                                                    <span className="text-xs font-medium uppercase tracking-wider">Email</span>
+                                                </div>
+                                                {formData.email ? (
+                                                    <a
+                                                        href={`mailto:${formData.email}`}
+                                                        className="text-foreground font-medium pl-6 hover:text-primary hover:underline transition-all block truncate text-base"
+                                                    >
+                                                        {formData.email}
+                                                    </a>
+                                                ) : (
+                                                    <p className="text-muted-foreground pl-6">-</p>
+                                                )}
+                                            </div>
 
+                                            {/* Phone */}
+                                            <div className="space-y-2 group">
+                                                <div className="flex items-center space-x-2 text-muted-foreground group-hover:text-primary transition-colors">
+                                                    <Icon name="Phone" size={16} />
+                                                    <span className="text-xs font-medium uppercase tracking-wider">Phone</span>
+                                                </div>
+                                                {formData.mobile ? (
+                                                    <a
+                                                        href={`tel:${formData.mobile}`}
+                                                        className="text-foreground font-medium pl-6 hover:text-primary hover:underline transition-all block text-base"
+                                                    >
+                                                        {formData.mobile}
+                                                    </a>
+                                                ) : (
+                                                    <p className="text-muted-foreground pl-6">-</p>
+                                                )}
+                                            </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                                    Expected Closing
-                                                </label>
-                                                <p className="text-foreground font-medium">
+                                            {/* Expected Closing */}
+                                            <div className="space-y-2 group">
+                                                <div className="flex items-center space-x-2 text-muted-foreground group-hover:text-primary transition-colors">
+                                                    <Icon name="Calendar" size={16} />
+                                                    <span className="text-xs font-medium uppercase tracking-wider">Expected Closing</span>
+                                                </div>
+                                                <p className="text-foreground font-medium pl-6 text-base">
                                                     {formData.closeDate ? new Date(formData.closeDate).toLocaleDateString('en-US', {
+                                                        weekday: 'short',
                                                         month: 'long',
                                                         day: 'numeric',
                                                         year: 'numeric'
@@ -234,28 +266,19 @@ const LeadDetailView = ({ deal, isOpen, onClose, onSave, teamMembers, showToast 
                                                 </p>
                                             </div>
 
-                                            <div>
-                                                {formData.tags && formData.tags.length > 0 && (
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-muted-foreground mb-2">
-                                                            Tags
-                                                        </label>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {formData.tags.map((tag, index) => (
-                                                                <span
-                                                                    key={index}
-                                                                    className="px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full"
-                                                                >
-                                                                    {tag}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
+                                            {/* Source */}
+                                            <div className="space-y-2 group">
+                                                <div className="flex items-center space-x-2 text-muted-foreground group-hover:text-primary transition-colors">
+                                                    <Icon name="Globe" size={16} />
+                                                    <span className="text-xs font-medium uppercase tracking-wider">Source</span>
+                                                </div>
+                                                <div className="pl-6">
+                                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground border border-secondary-foreground/10 shadow-sm">
+                                                        {formData.source || 'Unknown'}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-
-
                                     </div>
                                 </div>
 

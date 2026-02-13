@@ -8,15 +8,18 @@ import Select from '../../../components/ui/Select';
 const AddDealModal = ({ isOpen, onClose, onSave, initialStage = null }) => {
   const [formData, setFormData] = useState({
     title: '',
-    accountName: '',
+    company: '',
+    contactName: '',
+    email: '',
+    mobile: '',
     value: '',
     owner: '',
     closeDate: '',
     priority: 'Medium',
     probability: '50',
     stage: initialStage || 'new',
+    source: '',
     description: '',
-    tags: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -66,8 +69,8 @@ const AddDealModal = ({ isOpen, onClose, onSave, initialStage = null }) => {
       newErrors.title = 'Deal title is required';
     }
 
-    if (!formData?.accountName?.trim()) {
-      newErrors.accountName = 'Account name is required';
+    if (!formData?.company?.trim()) {
+      newErrors.company = 'Company name is required';
     }
 
     if (!formData?.value || parseFloat(formData?.value) <= 0) {
@@ -115,20 +118,21 @@ const AddDealModal = ({ isOpen, onClose, onSave, initialStage = null }) => {
       const newDeal = {
         id: `deal-${Date.now()}`,
         title: formData?.title?.trim(),
-        accountName: formData?.accountName?.trim(),
+        contactName: formData?.contactName?.trim(),
+        company: formData?.company?.trim(),
+        email: formData?.email?.trim(),
+        mobile: formData?.mobile?.trim(),
         value: parseFloat(formData?.value),
         owner: {
           id: formData?.owner,
           name: ownerOptions?.find(o => o?.value === formData?.owner)?.label || '',
-          avatar: `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 50)}.jpg`,
-          avatarAlt: `Professional headshot of ${ownerOptions?.find(o => o?.value === formData?.owner)?.label || 'team member'}`
         },
         closeDate: formData?.closeDate,
         priority: formData?.priority,
         probability: parseFloat(formData?.probability),
         stage: formData?.stage,
+        source: formData?.source?.trim() || '',
         description: formData?.description?.trim(),
-        tags: formData?.tags ? formData?.tags?.split(',')?.map(tag => tag?.trim())?.filter(Boolean) : [],
         createdAt: new Date()?.toISOString(),
         updatedAt: new Date()?.toISOString()
       };
@@ -145,15 +149,18 @@ const AddDealModal = ({ isOpen, onClose, onSave, initialStage = null }) => {
   const handleClose = () => {
     setFormData({
       title: '',
-      accountName: '',
+      company: '',
+      contactName: '',
+      email: '',
+      mobile: '',
       value: '',
       owner: '',
       closeDate: '',
       priority: 'Medium',
       probability: '50',
       stage: initialStage || 'new',
+      source: '',
       description: '',
-      tags: ''
     });
     setErrors({});
     setIsSubmitting(false);
@@ -209,15 +216,41 @@ const AddDealModal = ({ isOpen, onClose, onSave, initialStage = null }) => {
                   error={errors?.title}
                   required
                 />
-                
+
                 <Input
-                  label="Account Name"
+                  label="Company"
                   type="text"
-                  placeholder="Enter account name"
-                  value={formData?.accountName}
-                  onChange={(e) => handleInputChange('accountName', e?.target?.value)}
-                  error={errors?.accountName}
+                  placeholder="Enter company name"
+                  value={formData?.company}
+                  onChange={(e) => handleInputChange('company', e?.target?.value)}
+                  error={errors?.company}
                   required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Input
+                  label="Contact Name"
+                  type="text"
+                  placeholder="Enter contact name"
+                  value={formData?.contactName}
+                  onChange={(e) => handleInputChange('contactName', e?.target?.value)}
+                />
+
+                <Input
+                  label="Email"
+                  type="email"
+                  placeholder="Enter email"
+                  value={formData?.email}
+                  onChange={(e) => handleInputChange('email', e?.target?.value)}
+                />
+
+                <Input
+                  label="Mobile"
+                  type="text"
+                  placeholder="Enter mobile number"
+                  value={formData?.mobile}
+                  onChange={(e) => handleInputChange('mobile', e?.target?.value)}
                 />
               </div>
 
@@ -300,12 +333,12 @@ const AddDealModal = ({ isOpen, onClose, onSave, initialStage = null }) => {
               />
               
               <Input
-                label="Tags"
+                label="Source"
                 type="text"
-                placeholder="Enter tags separated by commas"
-                description="e.g., enterprise, urgent, renewal"
-                value={formData?.tags}
-                onChange={(e) => handleInputChange('tags', e?.target?.value)}
+                placeholder="Enter lead source"
+                description="e.g., Website, Referral, Cold Call"
+                value={formData?.source}
+                onChange={(e) => handleInputChange('source', e?.target?.value)}
               />
             </div>
           </form>

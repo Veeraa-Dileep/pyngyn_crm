@@ -234,8 +234,8 @@ const RecycleBin = ({
                                                     <p className="text-sm font-medium text-foreground">
                                                         {activeTab === 'leads' ? item.name : item.title}
                                                     </p>
-                                                    {activeTab === 'pipeline' && item.accountName && (
-                                                        <p className="text-xs text-muted-foreground">{item.accountName}</p>
+                                                    {activeTab === 'pipeline' && item.company && (
+                                                        <p className="text-xs text-muted-foreground">{item.company}</p>
                                                     )}
                                                 </div>
                                             </div>

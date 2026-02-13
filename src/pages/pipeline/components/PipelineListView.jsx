@@ -100,9 +100,9 @@ const PipelineListView = ({
                     aValue = a?.title?.toLowerCase() || '';
                     bValue = b?.title?.toLowerCase() || '';
                     break;
-                case 'accountName':
-                    aValue = a?.accountName?.toLowerCase() || '';
-                    bValue = b?.accountName?.toLowerCase() || '';
+                case 'company':
+                    aValue = a?.company?.toLowerCase() || '';
+                    bValue = b?.company?.toLowerCase() || '';
                     break;
                 case 'owner':
                     aValue = a?.owner?.name?.toLowerCase() || '';
@@ -150,7 +150,7 @@ const PipelineListView = ({
                                 <span>Deal Title</span>
                             </th>
                             <th className="text-left px-4 py-3">
-                                <span>Account</span>
+                                <span>Company</span>
                             </th>
                             <th className="text-left px-4 py-3">
                                 <span>Owner</span>
@@ -214,7 +214,7 @@ const PipelineListView = ({
                                             <div className="font-medium text-foreground">{deal?.title}</div>
                                         </td>
                                         <td className="px-4 py-4">
-                                            <div className="text-foreground">{deal?.accountName}</div>
+                                            <div className="text-foreground">{deal?.company}</div>
                                         </td>
                                         <td className="px-4 py-4">
                                             <div className="flex items-center space-x-2">
@@ -314,7 +314,7 @@ const PipelineListView = ({
                                 <div className="flex items-start justify-between mb-3">
                                     <div>
                                         <h3 className="font-semibold text-foreground text-sm">{deal?.title}</h3>
-                                        <p className="text-xs text-muted-foreground mt-0.5">{deal?.accountName}</p>
+                                        <p className="text-xs text-muted-foreground mt-0.5">{deal?.company}</p>
                                     </div>
                                     {/* STAGE EDITING DISABLED - Uncomment below to re-enable stage editing */}
                                     {/* <select
